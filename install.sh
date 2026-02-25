@@ -190,6 +190,21 @@ if [[ "$INSTALL_CONFIG" == true ]]; then
     copy_file "${SCRIPT_DIR}/config/CLAUDE.md" "${CLAUDE_DIR}/CLAUDE.md"
     copy_file "${SCRIPT_DIR}/config/settings.json" "${CLAUDE_DIR}/settings.json"
     symlink_file "${SCRIPT_DIR}/config/CONTEXT_WEIGHTS.md" "${CLAUDE_DIR}/CONTEXT_WEIGHTS.md"
+
+    # Append conditional snippets to CLAUDE.md based on installed components
+    if [[ "$DRY_RUN" != true && -f "${CLAUDE_DIR}/CLAUDE.md" ]]; then
+        if [[ "$INSTALL_WORKFLOW" == true && -f "${SCRIPT_DIR}/config/snippets/workflow.md" ]]; then
+            echo -e "  ${GREEN}[config]${NC} Appending workflow command reference to CLAUDE.md"
+            cat "${SCRIPT_DIR}/config/snippets/workflow.md" >> "${CLAUDE_DIR}/CLAUDE.md"
+        fi
+        if [[ "$INSTALL_SKILLS" == true && -f "${SCRIPT_DIR}/config/snippets/skills.md" ]]; then
+            echo -e "  ${GREEN}[config]${NC} Appending skills reference to CLAUDE.md"
+            cat "${SCRIPT_DIR}/config/snippets/skills.md" >> "${CLAUDE_DIR}/CLAUDE.md"
+        fi
+    elif [[ "$DRY_RUN" == true ]]; then
+        [[ "$INSTALL_WORKFLOW" == true ]] && echo -e "  ${BLUE}[dry-run]${NC} append workflow reference → ${CLAUDE_DIR}/CLAUDE.md" || true
+        [[ "$INSTALL_SKILLS" == true ]] && echo -e "  ${BLUE}[dry-run]${NC} append skills reference → ${CLAUDE_DIR}/CLAUDE.md" || true
+    fi
 fi
 
 # --- Summary ---
