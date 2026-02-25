@@ -5,7 +5,7 @@ A shareable collection of Claude Code commands, skills, hooks, and configuration
 ## Quick Start
 
 ```bash
-git clone https://github.com/Basilisk-Systems/claude-toolkit-code.git ~/claude-toolkit
+git clone https://github.com/Basilisk-Systems/claude-toolkit.git ~/claude-toolkit
 cd ~/claude-toolkit
 
 # Core only (implement + init-claude-local commands)
