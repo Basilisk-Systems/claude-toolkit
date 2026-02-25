@@ -3,19 +3,84 @@ set -euo pipefail
 
 # Claude Toolkit — Project Init
 # Sets up .claude-local/ directory with template files in any repo.
-# Usage: ./project-init.sh [project-path]
+# Usage: ./project-init.sh [options] [project-path]
 #   project-path defaults to current directory
+#
+# Options:
+#   -y, --yes                Accept all defaults without prompting
+#   --gitignore-local        Add .claude-local/ to .gitignore (default: prompt, Y)
+#   --no-gitignore-local     Don't add .claude-local/ to .gitignore
+#   --gitignore-claude       Add .claude/ to .gitignore
+#   --no-gitignore-claude    Don't add .claude/ to .gitignore (default: prompt, N)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATES_DIR="${SCRIPT_DIR}/templates/claude-local"
+HOOKS_TEMPLATES_DIR="${SCRIPT_DIR}/templates/claude-project/hooks"
 
 # Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+# Helper: add an entry to .gitignore with prompt support
+# Usage: add_gitignore_entry <gitignore_path> <pattern> <comment> <flag_var> <default>
+#   flag_var: "yes" = force add, "no" = skip, "" = prompt
+#   default: Y or N (used when prompting or --yes)
+add_gitignore_entry() {
+    local gitignore="$1" pattern="$2" comment="$3" flag_override="$4" default="$5"
+
+    # Already present — nothing to do
+    if [[ -f "$gitignore" ]] && grep -q "${pattern}" "$gitignore" 2>/dev/null; then
+        return 0
+    fi
+
+    # Decide whether to add
+    local do_add=false
+    if [[ "$flag_override" == "yes" ]]; then
+        do_add=true
+    elif [[ "$flag_override" == "no" ]]; then
+        do_add=false
+    elif $AUTO_YES; then
+        # --yes flag: use the default
+        [[ "$default" == "Y" ]] && do_add=true
+    else
+        # Interactive prompt
+        read -rp "Add ${pattern}/ to .gitignore? (${default}/$([ "$default" = "Y" ] && echo "n" || echo "y")) " ANSWER
+        ANSWER="${ANSWER:-$default}"
+        [[ "$ANSWER" =~ ^[Yy]$ ]] && do_add=true
+    fi
+
+    if $do_add; then
+        if [[ ! -f "$gitignore" ]]; then
+            touch "$gitignore"
+        fi
+        echo "" >> "$gitignore"
+        echo "# ${comment}" >> "$gitignore"
+        echo "${pattern}/" >> "$gitignore"
+        echo -e "  ${GREEN}Added ${pattern}/ to .gitignore${NC}"
+    fi
+}
+
+# Parse flags
+AUTO_YES=false
+GITIGNORE_LOCAL=""      # "" = prompt, "yes" = force, "no" = skip
+GITIGNORE_CLAUDE=""     # "" = prompt, "yes" = force, "no" = skip
+POSITIONAL=()
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -y|--yes)           AUTO_YES=true; shift ;;
+        --gitignore-local)  GITIGNORE_LOCAL="yes"; shift ;;
+        --no-gitignore-local) GITIGNORE_LOCAL="no"; shift ;;
+        --gitignore-claude) GITIGNORE_CLAUDE="yes"; shift ;;
+        --no-gitignore-claude) GITIGNORE_CLAUDE="no"; shift ;;
+        -*)                 echo "Unknown option: $1"; exit 1 ;;
+        *)                  POSITIONAL+=("$1"); shift ;;
+    esac
+done
+
 # Resolve target directory
-TARGET_DIR="${1:-.}"
+TARGET_DIR="${POSITIONAL[0]:-.}"
 TARGET_DIR="$(cd "$TARGET_DIR" 2>/dev/null && pwd || echo "$TARGET_DIR")"
 # Convert to absolute path if relative
 [[ "$TARGET_DIR" != /* ]] && TARGET_DIR="$(pwd)/$TARGET_DIR"
@@ -26,56 +91,356 @@ if [[ ! -d "$TARGET_DIR" ]]; then
     exit 1
 fi
 
+LOCAL_EXISTED=false
+
 # Check if already initialized
 if [[ -d "$LOCAL_DIR" ]] && [[ "$(ls -A "$LOCAL_DIR" 2>/dev/null)" ]]; then
     echo -e "${YELLOW}.claude-local/ already exists in ${TARGET_DIR}${NC}"
     echo "Contents:"
     ls -1 "$LOCAL_DIR"
+    echo ""
+    LOCAL_EXISTED=true
+else
+    # Create directory
+    mkdir -p "$LOCAL_DIR"
+
+    # Copy templates (skip existing)
+    CREATED=()
+    for template in "${TEMPLATES_DIR}"/*.md; do
+        name="$(basename "$template")"
+        target="${LOCAL_DIR}/${name}"
+        if [[ ! -e "$target" ]]; then
+            cp "$template" "$target"
+            CREATED+=("$name")
+        fi
+    done
+
+    # Update .gitignore for .claude-local/
+    GITIGNORE="${TARGET_DIR}/.gitignore"
+    add_gitignore_entry "$GITIGNORE" ".claude-local" \
+        "Claude Code local files (personal, not committed)" \
+        "$GITIGNORE_LOCAL" "Y"
+
+    # Summary
+    echo -e "${GREEN}.claude-local/ initialized in ${TARGET_DIR}${NC}"
+    echo ""
+    echo "Created:"
+    for f in "${CREATED[@]}"; do
+        case "$f" in
+            STANDUP.md)          echo "  - STANDUP.md          — Work tracking for standups" ;;
+            NOTES.md)            echo "  - NOTES.md            — Personal debugging notes" ;;
+            TODO.md)             echo "  - TODO.md             — Personal task ideas" ;;
+            HANDOFF.md)          echo "  - HANDOFF.md          — Session context for continuity" ;;
+            IMPLEMENT_STATE.md)  echo "  - IMPLEMENT_STATE.md  — Phase tracking for /implement" ;;
+            *)                   echo "  - ${f}" ;;
+        esac
+    done
+    echo ""
+    echo "Run /standup in Claude Code to start tracking your work session."
+    echo ""
+fi
+
+# =============================================================================
+# PROJECT HOOKS SETUP
+# =============================================================================
+
+CLAUDE_DIR="${TARGET_DIR}/.claude"
+HOOKS_DIR="${CLAUDE_DIR}/hooks"
+SETTINGS_FILE="${CLAUDE_DIR}/settings.json"
+
+# Check if project hooks already configured
+if [[ -f "$SETTINGS_FILE" ]] && command -v python3 &> /dev/null; then
+    if python3 -c "import json; d=json.load(open('$SETTINGS_FILE')); exit(0 if 'hooks' in d else 1)" 2>/dev/null; then
+        echo -e "${YELLOW}Project hooks already configured in .claude/settings.json${NC}"
+        exit 0
+    fi
+elif [[ -f "$SETTINGS_FILE" ]] && grep -q '"hooks"' "$SETTINGS_FILE" 2>/dev/null; then
+    echo -e "${YELLOW}Project hooks already configured in .claude/settings.json${NC}"
     exit 0
 fi
 
-# Create directory
-mkdir -p "$LOCAL_DIR"
+# Ask user about project hooks
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "PROJECT HOOKS SETUP"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "session-handoff.sh is always included (auto-loads HANDOFF.md on new sessions)."
+echo ""
 
-# Copy templates (skip existing)
-CREATED=()
-for template in "${TEMPLATES_DIR}"/*.md; do
-    name="$(basename "$template")"
-    target="${LOCAL_DIR}/${name}"
-    if [[ ! -e "$target" ]]; then
-        cp "$template" "$target"
-        CREATED+=("$name")
+# Helper: prompt with default, respecting AUTO_YES
+# Usage: prompt_yn "Question?" "Y"  → sets REPLY to Y or N
+prompt_yn() {
+    local question="$1" default="$2"
+    if $AUTO_YES; then
+        REPLY="$default"
+        return 0
     fi
-done
+    local hint
+    [[ "$default" == "Y" ]] && hint="Y/n" || hint="y/N"
+    read -rp "${question} (${hint}) " REPLY || true
+    REPLY="${REPLY:-$default}"
+}
 
-# Update .gitignore
-GITIGNORE="${TARGET_DIR}/.gitignore"
-if [[ -f "$GITIGNORE" ]]; then
-    if ! grep -q '\.claude-local' "$GITIGNORE" 2>/dev/null; then
-        echo "" >> "$GITIGNORE"
-        echo "# Claude Code local files (personal, not committed)" >> "$GITIGNORE"
-        echo ".claude-local/" >> "$GITIGNORE"
+# Helper: prompt for value with default, respecting AUTO_YES
+# Usage: prompt_value "Question?" "default_val"  → sets REPLY
+prompt_value() {
+    local question="$1" default="$2"
+    if $AUTO_YES; then
+        REPLY="$default"
+        return 0
     fi
+    read -rp "${question} (default: ${default}) " REPLY || true
+    REPLY="${REPLY:-$default}"
+}
+
+prompt_yn "Set up project hooks?" "Y"
+if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+    echo "Skipping project hooks setup."
+    exit 0
+fi
+
+# Collect hook selections
+INSTALL_BLOCK_CLI=false
+INSTALL_PRECOMMIT=false
+INSTALL_COVERAGE=false
+
+echo ""
+prompt_yn "Block cloud CLI commands? (aws, gcloud, etc.)" "Y"
+[[ "$REPLY" =~ ^[Yy]$ ]] && INSTALL_BLOCK_CLI=true
+
+prompt_yn "Pre-commit check before git commits?" "Y"
+[[ "$REPLY" =~ ^[Yy]$ ]] && INSTALL_PRECOMMIT=true
+
+prompt_yn "Test coverage check after writing test files?" "Y"
+[[ "$REPLY" =~ ^[Yy]$ ]] && INSTALL_COVERAGE=true
+
+# Collect configuration for selected hooks
+BLOCKED_COMMANDS="aws|cdk"
+if $INSTALL_BLOCK_CLI; then
+    echo ""
+    echo "Common cloud CLIs: aws, cdk, gcloud, az, terraform, pulumi, kubectl, helm"
+    prompt_value "Which CLIs to block? (pipe-separated)" "aws|cdk"
+    [[ -n "$REPLY" ]] && BLOCKED_COMMANDS="$REPLY"
+fi
+
+STACK="js"
+COVERAGE_THRESHOLD=80
+if $INSTALL_COVERAGE; then
+    echo ""
+    prompt_value "Test stack — js or python?" "js"
+    [[ -n "$REPLY" ]] && STACK="$REPLY"
+
+    prompt_value "Coverage threshold?" "80"
+    [[ -n "$REPLY" ]] && COVERAGE_THRESHOLD="$REPLY"
+fi
+
+# Create hooks directory and copy templates
+mkdir -p "$HOOKS_DIR"
+
+INSTALLED_HOOKS=()
+
+# Always install session-handoff
+cp "${HOOKS_TEMPLATES_DIR}/session-handoff.sh" "${HOOKS_DIR}/session-handoff.sh"
+chmod +x "${HOOKS_DIR}/session-handoff.sh"
+INSTALLED_HOOKS+=("session-handoff")
+
+if $INSTALL_BLOCK_CLI; then
+    sed "s#^BLOCKED_COMMANDS=.*#BLOCKED_COMMANDS=\"${BLOCKED_COMMANDS}\"#" \
+        "${HOOKS_TEMPLATES_DIR}/block-cloud-cli.sh" > "${HOOKS_DIR}/block-cloud-cli.sh"
+    chmod +x "${HOOKS_DIR}/block-cloud-cli.sh"
+    INSTALLED_HOOKS+=("block-cloud-cli")
+fi
+
+if $INSTALL_PRECOMMIT; then
+    cp "${HOOKS_TEMPLATES_DIR}/pre-commit-check.sh" "${HOOKS_DIR}/pre-commit-check.sh"
+    chmod +x "${HOOKS_DIR}/pre-commit-check.sh"
+    INSTALLED_HOOKS+=("pre-commit-check")
+fi
+
+if $INSTALL_COVERAGE; then
+    sed -e "s|^STACK=.*|STACK=\"${STACK}\"|" \
+        -e "s|^COVERAGE_THRESHOLD=.*|COVERAGE_THRESHOLD=${COVERAGE_THRESHOLD}|" \
+        "${HOOKS_TEMPLATES_DIR}/test-coverage-check.sh" > "${HOOKS_DIR}/test-coverage-check.sh"
+    chmod +x "${HOOKS_DIR}/test-coverage-check.sh"
+    INSTALLED_HOOKS+=("test-coverage-check")
+fi
+
+# Generate settings.json using Python for clean JSON output
+python3 - "$INSTALL_BLOCK_CLI" "$INSTALL_PRECOMMIT" "$INSTALL_COVERAGE" "$STACK" "$SETTINGS_FILE" <<'PYEOF'
+import json
+import sys
+
+install_block_cli = sys.argv[1] == "true"
+install_precommit = sys.argv[2] == "true"
+install_coverage = sys.argv[3] == "true"
+stack = sys.argv[4]
+settings_file = sys.argv[5]
+
+settings = {"hooks": {}}
+
+# UserPromptSubmit — session-handoff (always)
+settings["hooks"]["UserPromptSubmit"] = [{
+    "matcher": "",
+    "hooks": [{
+        "type": "command",
+        "command": ".claude/hooks/session-handoff.sh",
+        "timeout": 5000
+    }]
+}]
+
+# PreToolUse — block-cloud-cli + pre-commit-check
+pre_tool_hooks = []
+if install_block_cli:
+    pre_tool_hooks.append({
+        "type": "command",
+        "command": ".claude/hooks/block-cloud-cli.sh",
+        "timeout": 5000
+    })
+if install_precommit:
+    pre_tool_hooks.append({
+        "type": "command",
+        "command": ".claude/hooks/pre-commit-check.sh",
+        "timeout": 120000
+    })
+if pre_tool_hooks:
+    settings["hooks"]["PreToolUse"] = [{
+        "matcher": "Bash",
+        "hooks": pre_tool_hooks
+    }]
+
+# PostToolUse — test-coverage-check
+if install_coverage:
+    if stack == "js":
+        matcher = (
+            "Write(*.test.ts)|Write(*.test.tsx)|Write(*.test.js)|Write(*.test.jsx)"
+            "|Edit(*.test.ts)|Edit(*.test.tsx)|Edit(*.test.js)|Edit(*.test.jsx)"
+        )
+    else:
+        matcher = "Write(test_*.py)|Write(*_test.py)|Edit(test_*.py)|Edit(*_test.py)"
+
+    settings["hooks"]["PostToolUse"] = [{
+        "matcher": matcher,
+        "hooks": [{
+            "type": "command",
+            "command": ".claude/hooks/test-coverage-check.sh",
+            "timeout": 120000
+        }]
+    }]
+
+# Load existing settings and merge if file exists
+try:
+    with open(settings_file) as f:
+        existing = json.load(f)
+    existing["hooks"] = settings["hooks"]
+    settings = existing
+except (FileNotFoundError, json.JSONDecodeError):
+    pass
+
+with open(settings_file, "w") as f:
+    json.dump(settings, f, indent=2)
+    f.write("\n")
+
+PYEOF
+
+# Generate starter CLAUDE.md if hooks were installed and it doesn't exist
+if [[ ! -f "${TARGET_DIR}/CLAUDE.md" ]]; then
+    python3 - "$INSTALL_BLOCK_CLI" "$INSTALL_PRECOMMIT" "$INSTALL_COVERAGE" \
+        "$BLOCKED_COMMANDS" "$COVERAGE_THRESHOLD" "${TARGET_DIR}/CLAUDE.md" <<'PYEOF'
+import sys
+
+install_block_cli = sys.argv[1] == "true"
+install_precommit = sys.argv[2] == "true"
+install_coverage = sys.argv[3] == "true"
+blocked_commands = sys.argv[4]
+coverage_threshold = sys.argv[5]
+output_file = sys.argv[6]
+
+lines = ["# CLAUDE.md", ""]
+
+# Hard Rules section — only if at least one hook has a rule
+rules = []
+if install_block_cli:
+    cli_list = ", ".join(f"`{c}`" for c in blocked_commands.split("|"))
+    rules.append(
+        f"{len(rules) + 1}. **NO cloud CLI execution** — Never run {cli_list} commands directly. "
+        "Always provide commands for the user to copy-paste. "
+        "(Enforced by `.claude/hooks/block-cloud-cli.sh`)"
+    )
+if install_precommit:
+    rules.append(
+        f"{len(rules) + 1}. **Pre-commit hooks must pass** — Never skip or bypass pre-commit checks. "
+        "Fix issues instead of using `--no-verify`. "
+        "(Enforced by `.claude/hooks/pre-commit-check.sh`)"
+    )
+if install_coverage:
+    rules.append(
+        f"{len(rules) + 1}. **Maintain test coverage** — Test coverage must meet the {coverage_threshold}% threshold. "
+        "Write tests for new code. "
+        "(Enforced by `.claude/hooks/test-coverage-check.sh`)"
+    )
+
+if rules:
+    lines.append("## HARD RULES (Never violate)")
+    lines.append("")
+    lines.extend(rules)
+    lines.append("")
+    lines.append("---")
+    lines.append("")
+
+# Generic scaffolding sections with TODO markers
+sections = [
+    ("Project Overview", "Describe your project — what it does, who it's for, key concepts"),
+    ("Tech Stack", "List your languages, frameworks, and key dependencies"),
+    ("Project Structure", "Outline directory layout and where to find things"),
+    ("Code Style", "Linters, formatters, naming conventions, patterns to follow"),
+    ("Testing", "How to run tests, coverage requirements, testing patterns"),
+    ("Git Conventions", "Branch naming, commit message format, PR process"),
+    ("Common Tasks", "Frequent development workflows (add endpoint, run migrations, etc.)"),
+]
+
+for title, hint in sections:
+    lines.append(f"## {title}")
+    lines.append("")
+    lines.append(f"<!-- TODO: {hint} -->")
+    lines.append("")
+
+with open(output_file, "w") as f:
+    f.write("\n".join(lines))
+
+PYEOF
+    CREATED_CLAUDE_MD=true
 else
-    cat > "$GITIGNORE" <<'EOF'
-# Claude Code local files (personal, not committed)
-.claude-local/
-EOF
+    CREATED_CLAUDE_MD=false
 fi
 
 # Summary
-echo -e "${GREEN}✅ .claude-local/ initialized in ${TARGET_DIR}${NC}"
 echo ""
-echo "Created:"
-for f in "${CREATED[@]}"; do
-    case "$f" in
-        STANDUP.md)          echo "  - STANDUP.md          — Work tracking for standups" ;;
-        NOTES.md)            echo "  - NOTES.md            — Personal debugging notes" ;;
-        TODO.md)             echo "  - TODO.md             — Personal task ideas" ;;
-        HANDOFF.md)          echo "  - HANDOFF.md          — Session context for continuity" ;;
-        IMPLEMENT_STATE.md)  echo "  - IMPLEMENT_STATE.md  — Phase tracking for /implement" ;;
-        *)                   echo "  - ${f}" ;;
+echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}Project hooks installed in .claude/hooks/${NC}"
+echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+
+for hook in "${INSTALLED_HOOKS[@]}"; do
+    case "$hook" in
+        session-handoff)  echo "  - session-handoff.sh     — Auto-loads HANDOFF.md on new sessions (auto-included)" ;;
+        block-cloud-cli)  echo "  - block-cloud-cli.sh     — Blocks [${BLOCKED_COMMANDS//|/, }] commands" ;;
+        pre-commit-check) echo "  - pre-commit-check.sh    — Runs pre-commit before git commits" ;;
+        test-coverage-check) echo "  - test-coverage-check.sh — Checks test coverage (${STACK}, ${COVERAGE_THRESHOLD}%)" ;;
     esac
 done
+
 echo ""
-echo "Run /standup in Claude Code to start tracking your work session."
+echo "Settings written to .claude/settings.json"
+if $CREATED_CLAUDE_MD; then
+    echo -e "  ${GREEN}Generated starter CLAUDE.md${NC} — fill in the TODO sections"
+fi
+echo ""
+
+# Offer to gitignore .claude/ (unusual, but some teams prefer it)
+GITIGNORE="${TARGET_DIR}/.gitignore"
+add_gitignore_entry "$GITIGNORE" ".claude" \
+    "Claude Code project config (hooks, settings)" \
+    "$GITIGNORE_CLAUDE" "N"
+
+echo ""
+echo "Reminder: .claude/ is typically committed (shared hooks/settings). .claude-local/ is personal."

@@ -1,6 +1,6 @@
 ---
 description: Initialize .claude-local/ folder for personal project files
-allowed-tools: Read, Write, Bash, Edit, Grep
+allowed-tools: Read, Write, Bash, Edit, Grep, AskUserQuestion
 ---
 
 Set up the `.claude-local/` directory for personal, untracked project files.
@@ -11,7 +11,7 @@ Set up the `.claude-local/` directory for personal, untracked project files.
 
 Run `ls -la .claude-local/ 2>/dev/null` to check existence.
 
-If the folder already exists with files, inform the user it's already set up, show contents, and stop.
+If the folder already exists with files, inform the user it's already set up and show contents. Set a mental flag `LOCAL_EXISTED=true` — **do not stop**, proceed to Step 5 to offer project hooks.
 
 Otherwise, run `mkdir -p .claude-local`.
 
@@ -92,9 +92,18 @@ No active implementation. This file is auto-managed by `/implement` to track pha
 
 **Grep `.gitignore` for `.claude-local`** to check if it's already listed.
 
-### Step 3: Update .gitignore if needed
+### Step 3: Offer to update .gitignore
 
-If `.claude-local/` is NOT already in `.gitignore`, append:
+Check if `.claude-local/` is already in `.gitignore` (Grep for it).
+
+If it's **not** already listed, use `AskUserQuestion`:
+- Question: "Add .claude-local/ to .gitignore? (recommended — these are personal files)"
+- Header: "Gitignore"
+- Options:
+  1. **Yes** (Recommended) — "Add .claude-local/ to .gitignore so personal files aren't committed"
+  2. **No** — "Skip — I'll manage .gitignore myself"
+
+If yes, append to `.gitignore` (create the file if it doesn't exist):
 ```
 # Claude Code local files (personal, not committed)
 .claude-local/
@@ -115,3 +124,168 @@ Created:
 
 Run /standup to start tracking your work session.
 ```
+
+---
+
+## Project Hooks Setup
+
+### Step 5: Check for existing project hooks
+
+Check if `.claude/settings.json` exists AND already contains a `hooks` key.
+
+If it does, output "Project hooks already configured in .claude/settings.json" and **stop here**.
+
+Otherwise, proceed to offer hook setup (even if `LOCAL_EXISTED=true` from Step 1).
+
+### Step 6: Ask the user which hooks to install
+
+The `session-handoff.sh` hook is **auto-included** — it's not a choice. Inform the user of this.
+
+Use `AskUserQuestion` with a **single multi-select question**:
+
+- **Question**: "Which project hooks would you like to install? (session-handoff is auto-included)"
+- **Header**: "Hooks"
+- **multiSelect**: true
+- **Options**:
+  1. **Block Cloud CLI** — "Prevents Claude from running cloud commands directly (aws, gcloud, az, etc.)"
+  2. **Pre-commit Check** — "Runs pre-commit hooks before git commits to enforce quality gates"
+  3. **Test Coverage Check** — "Runs tests and checks coverage after writing test files"
+  4. **None** — "Skip project hooks setup entirely"
+
+If the user selects "None", output "Skipping project hooks setup." and **stop here**.
+
+### Step 7: Collect configuration for selected hooks
+
+For each selected hook, collect configuration:
+
+**If Block Cloud CLI was selected:**
+Use `AskUserQuestion`:
+- Question: "Which cloud CLIs should be blocked?"
+- Header: "CLIs"
+- Options:
+  1. **aws, cdk** (Recommended) — "AWS CLI and CDK"
+  2. **gcloud** — "Google Cloud CLI"
+  3. **az** — "Azure CLI"
+  4. **terraform, pulumi** — "Infrastructure-as-code tools"
+- multiSelect: true
+
+Join selections into a pipe-separated string for the `BLOCKED_COMMANDS` variable (e.g., `aws|cdk|terraform|pulumi`).
+
+**If Test Coverage Check was selected:**
+Use `AskUserQuestion` (two questions in one call):
+- Question 1: "What's your test stack?" / Header: "Stack" / Options: **JavaScript/TypeScript** (js), **Python** (python)
+- Question 2: "What coverage threshold?" / Header: "Threshold" / Options: **80%** (Recommended), **90%**, **70%**, **60%**
+
+### Step 8: Write hooks and generate settings.json
+
+Do these in parallel where possible:
+
+1. Run `mkdir -p .claude/hooks`
+
+2. **Copy hook templates** from the toolkit's `templates/claude-project/hooks/` directory. Read each needed template, customize config variables with `sed` or string replacement, then Write to `.claude/hooks/`:
+   - Always: `session-handoff.sh`
+   - If selected: `block-cloud-cli.sh` — replace `BLOCKED_COMMANDS="aws|cdk"` with the user's selection
+   - If selected: `pre-commit-check.sh` — no customization needed
+   - If selected: `test-coverage-check.sh` — replace `STACK="js"` and `COVERAGE_THRESHOLD=80` with user's selections
+
+3. Run `chmod +x .claude/hooks/*.sh`
+
+4. **Generate `.claude/settings.json`** with ONLY the `hooks` key. Build the structure based on selected hooks:
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-handoff.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          // Include block-cloud-cli.sh if selected (timeout: 5000)
+          // Include pre-commit-check.sh if selected (timeout: 120000)
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "<varies by stack - see below>",
+        "hooks": [
+          // Include test-coverage-check.sh if selected (timeout: 120000)
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Matcher for test-coverage-check.sh:**
+- JS stack: `Write(*.test.ts)|Write(*.test.tsx)|Write(*.test.js)|Write(*.test.jsx)|Edit(*.test.ts)|Edit(*.test.tsx)|Edit(*.test.js)|Edit(*.test.jsx)`
+- Python stack: `Write(test_*.py)|Write(*_test.py)|Edit(test_*.py)|Edit(*_test.py)`
+
+**Merge rules:** If both block-cloud-cli and pre-commit-check are selected, they share the same `PreToolUse` → `Bash` matcher entry. Omit any top-level hook event keys that have no entries (e.g., don't include `PostToolUse` if test-coverage wasn't selected).
+
+### Step 9: Generate starter CLAUDE.md
+
+Check if `CLAUDE.md` exists at the project root. If it already exists, skip this step silently.
+
+If it does **not** exist, generate a starter `CLAUDE.md` using the Write tool with the following structure:
+
+**Hard Rules section** — include only rules for hooks that were installed:
+- Block Cloud CLI → rule about not running the blocked CLIs directly, referencing the hook file and listing the specific blocked commands
+- Pre-commit Check → rule about never skipping pre-commit checks with `--no-verify`, referencing the hook file
+- Test Coverage Check → rule about maintaining coverage at the configured threshold, referencing the hook file
+
+Number the rules sequentially (1, 2, 3...). If no configurable hooks were selected, omit the Hard Rules section entirely.
+
+**Scaffolding sections** — always include these with `<!-- TODO: ... -->` markers:
+- `## Project Overview` — "Describe your project — what it does, who it's for, key concepts"
+- `## Tech Stack` — "List your languages, frameworks, and key dependencies"
+- `## Project Structure` — "Outline directory layout and where to find things"
+- `## Code Style` — "Linters, formatters, naming conventions, patterns to follow"
+- `## Testing` — "How to run tests, coverage requirements, testing patterns"
+- `## Git Conventions` — "Branch naming, commit message format, PR process"
+- `## Common Tasks` — "Frequent development workflows (add endpoint, run migrations, etc.)"
+
+Do **not** add language-specific content — the user fills in the TODO sections themselves.
+
+### Step 10: Offer to gitignore .claude/ and summarize
+
+Check if `.claude/` is already in `.gitignore`. If it's **not** listed, use `AskUserQuestion`:
+- Question: "Add .claude/ to .gitignore? (not typical — .claude/ is usually committed as shared project config)"
+- Header: "Gitignore"
+- Options:
+  1. **No** (Recommended) — "Keep .claude/ committed so hooks and settings are shared with the team"
+  2. **Yes** — "Add .claude/ to .gitignore (each developer manages their own hooks locally)"
+
+If yes, append to `.gitignore`:
+```
+# Claude Code project config (hooks, settings)
+.claude/
+```
+
+Then output:
+```
+Project hooks installed in .claude/hooks/:
+
+- session-handoff.sh     — Auto-loads HANDOFF.md on new sessions (auto-included)
+- block-cloud-cli.sh     — Blocks [aws, cdk] commands (if selected)
+- pre-commit-check.sh    — Runs pre-commit before git commits (if selected)
+- test-coverage-check.sh — Checks test coverage [js/python, 80%] (if selected)
+
+Settings written to .claude/settings.json
+Generated starter CLAUDE.md (if created in Step 9)
+
+Reminder: .claude/ is typically committed (shared hooks/settings). .claude-local/ is personal.
+```
+
+Only list hooks that were actually installed. Include config details in parentheses.
