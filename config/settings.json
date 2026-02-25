@@ -1,0 +1,146 @@
+{
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "false"
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(npm test:*)",
+      "Bash(npm run:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx prettier:*)",
+      "Bash(python -m black:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(echo:*)",
+      "Bash(date:*)",
+      "Bash(aws logs:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)*",
+      "Bash(rm -rf ~)*",
+      "Bash(sudo rm)*",
+      "Bash(*> /dev/sd*)*",
+      "Bash(mkfs*)*",
+      "Bash(dd if=*)*"
+    ],
+    "defaultMode": "acceptEdits"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/session-start.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/bash-safety.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/write-safety.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Write(*CHANGELOG*)|Edit(*CHANGELOG*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/changelog-validator.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/log-commands.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/post-commit-complete.sh",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Write(*.py)|Edit(*.py)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/format-python.sh",
+            "timeout": 30000
+          }
+        ]
+      },
+      {
+        "matcher": "Write(*.ts)|Write(*.tsx)|Write(*.js)|Write(*.jsx)|Edit(*.ts)|Edit(*.tsx)|Edit(*.js)|Edit(*.jsx)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/format-typescript.sh",
+            "timeout": 30000
+          }
+        ]
+      },
+      {
+        "matcher": "Write(*.json)|Edit(*.json)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/format-json.sh",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/context-monitor.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}
