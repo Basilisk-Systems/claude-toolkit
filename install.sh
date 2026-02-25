@@ -184,6 +184,17 @@ if [[ "$INSTALL_HOOKS" == true ]]; then
     done
 fi
 
+# --- Bin (CLI tools, always with workflow) ---
+if [[ "$INSTALL_WORKFLOW" == true ]]; then
+    echo -e "${GREEN}[bin]${NC} CLI tools: session-summary"
+    mkdir -p "${CLAUDE_DIR}/bin"
+    for script in "${SCRIPT_DIR}"/bin/*; do
+        name="$(basename "$script")"
+        chmod +x "$script"
+        symlink_file "$script" "${CLAUDE_DIR}/bin/${name}"
+    done
+fi
+
 # --- Config ---
 if [[ "$INSTALL_CONFIG" == true ]]; then
     echo -e "${GREEN}[config]${NC} CLAUDE.md (copy), settings.json (copy), CONTEXT_WEIGHTS.md (symlink)"

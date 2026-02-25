@@ -49,6 +49,10 @@ remove_toolkit_symlinks "${CLAUDE_DIR}/skills"
 echo "Checking hooks..."
 remove_toolkit_symlinks "${CLAUDE_DIR}/hooks"
 
+# Bin
+echo "Checking bin..."
+remove_toolkit_symlinks "${CLAUDE_DIR}/bin"
+
 # Config (only symlinked files, not copied ones)
 echo "Checking config..."
 for config_file in "${CLAUDE_DIR}/CLAUDE.md" "${CLAUDE_DIR}/settings.json" "${CLAUDE_DIR}/CONTEXT_WEIGHTS.md"; do
