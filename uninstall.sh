@@ -27,7 +27,7 @@ remove_toolkit_symlinks() {
         if [[ "$target" == "${SCRIPT_DIR}"* ]]; then
             echo -e "  ${RED}[remove]${NC} ${item} → ${target}"
             rm "$item"
-            ((REMOVED++))
+            ((REMOVED++)) || true
         fi
     done
 }
@@ -57,7 +57,7 @@ for config_file in "${CLAUDE_DIR}/CLAUDE.md" "${CLAUDE_DIR}/settings.json" "${CL
         if [[ "$local_target" == "${SCRIPT_DIR}"* ]]; then
             echo -e "  ${RED}[remove]${NC} ${config_file}"
             rm "$config_file"
-            ((REMOVED++))
+            ((REMOVED++)) || true
         fi
     fi
 done

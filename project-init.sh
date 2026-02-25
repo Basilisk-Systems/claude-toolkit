@@ -16,8 +16,15 @@ NC='\033[0m'
 
 # Resolve target directory
 TARGET_DIR="${1:-.}"
-TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
+TARGET_DIR="$(cd "$TARGET_DIR" 2>/dev/null && pwd || echo "$TARGET_DIR")"
+# Convert to absolute path if relative
+[[ "$TARGET_DIR" != /* ]] && TARGET_DIR="$(pwd)/$TARGET_DIR"
 LOCAL_DIR="${TARGET_DIR}/.claude-local"
+
+if [[ ! -d "$TARGET_DIR" ]]; then
+    echo -e "${YELLOW}Directory does not exist: ${TARGET_DIR}${NC}"
+    exit 1
+fi
 
 # Check if already initialized
 if [[ -d "$LOCAL_DIR" ]] && [[ "$(ls -A "$LOCAL_DIR" 2>/dev/null)" ]]; then

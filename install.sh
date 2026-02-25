@@ -89,7 +89,7 @@ symlink_file() {
 
     if [[ "$DRY_RUN" == true ]]; then
         echo -e "  ${BLUE}[dry-run]${NC} ${source} → ${target}"
-        ((INSTALLED++))
+        ((INSTALLED++)) || true
         return
     fi
 
@@ -100,20 +100,20 @@ symlink_file() {
             # Existing symlink — always replace
             rm "$target"
             ln -s "$source" "$target"
-            ((OVERWRITTEN++))
+            ((OVERWRITTEN++)) || true
         elif [[ "$FORCE" == true ]]; then
-            # Existing regular file + --force
-            rm "$target"
+            # Existing regular file or directory + --force
+            rm -rf "$target"
             ln -s "$source" "$target"
-            ((OVERWRITTEN++))
+            ((OVERWRITTEN++)) || true
         else
             echo -e "  ${YELLOW}[skip]${NC} ${target} (exists, use --force to overwrite)"
-            ((SKIPPED++))
+            ((SKIPPED++)) || true
             return
         fi
     else
         ln -s "$source" "$target"
-        ((INSTALLED++))
+        ((INSTALLED++)) || true
     fi
 }
 
@@ -126,7 +126,7 @@ copy_file() {
 
     if [[ "$DRY_RUN" == true ]]; then
         echo -e "  ${BLUE}[dry-run]${NC} copy ${source} → ${target}"
-        ((INSTALLED++))
+        ((INSTALLED++)) || true
         return
     fi
 
@@ -134,14 +134,14 @@ copy_file() {
 
     if [[ -e "$target" && ! -L "$target" && "$FORCE" != true ]]; then
         echo -e "  ${YELLOW}[skip]${NC} ${target} (exists, use --force to overwrite)"
-        ((SKIPPED++))
+        ((SKIPPED++)) || true
         return
     fi
 
     # Remove existing (symlink or regular file with --force)
     [[ -e "$target" || -L "$target" ]] && rm "$target"
     cp "$source" "$target"
-    ((INSTALLED++))
+    ((INSTALLED++)) || true
 }
 
 echo -e "${GREEN}Claude Toolkit Installer${NC}"
@@ -195,9 +195,9 @@ fi
 # --- Summary ---
 echo ""
 echo -e "${GREEN}Done!${NC}"
-[[ "$DRY_RUN" == true ]] && echo -e "  ${BLUE}(dry-run mode — no changes made)${NC}"
+[[ "$DRY_RUN" == true ]] && echo -e "  ${BLUE}(dry-run mode — no changes made)${NC}" || true
 echo "  Installed: ${INSTALLED}"
-[[ $OVERWRITTEN -gt 0 ]] && echo "  Overwritten: ${OVERWRITTEN}"
-[[ $SKIPPED -gt 0 ]] && echo -e "  Skipped: ${SKIPPED} ${YELLOW}(use --force to overwrite)${NC}"
+[[ $OVERWRITTEN -gt 0 ]] && echo "  Overwritten: ${OVERWRITTEN}" || true
+[[ $SKIPPED -gt 0 ]] && echo -e "  Skipped: ${SKIPPED} ${YELLOW}(use --force to overwrite)${NC}" || true
 echo ""
 echo "Run './project-init.sh' in any repo to set up .claude-local/ working files."
