@@ -105,10 +105,20 @@ Projects may use pre-commit hooks that:
 
 ## Planning Protocol
 
-After completing a plan (exiting plan mode):
-1. **Automatically run `/estimate-context`** to project implementation cost
-2. Show high/medium/low token estimates
-3. Recommend whether to proceed, break into phases, or handoff mid-implementation
+When the plan file is written and ready, do these steps BEFORE calling ExitPlanMode:
+
+1. **Show the plan file path** — e.g., `Plan saved to: ~/.claude/plans/<name>.md`
+2. **Run `/estimate-context`** (via Skill tool) to project implementation cost
+3. **Call AskUserQuestion** with these options:
+   - **"Approve plan"** — description: "Proceed to ExitPlanMode (you'll get 'clear context & auto-accept' option)"
+   - **"Run /handoff first"** — description: "Save session handoff before exiting plan mode"
+   - **"I'll handle it manually"** — description: "Just show me the plan path — I'll take it from here"
+4. **Based on user's response:**
+   - "Approve plan" → Call ExitPlanMode
+   - "/handoff first" → Run `/handoff`, then call ExitPlanMode
+   - "Manually" → Show plan path and stop. Do NOT call ExitPlanMode.
+
+**CRITICAL: Do NOT write any code, create files, or begin implementing after ExitPlanMode. Your next tool calls MUST be the sequence above. Nothing else.**
 
 ## Efficiency Guidelines
 

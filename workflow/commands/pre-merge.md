@@ -1,7 +1,7 @@
 ---
 description: Generate a merge request title and description summarizing branch commits
 argument-hint: [base-branch (default: main)]
-allowed-tools: Bash(git:*), Read, Grep, Glob
+allowed-tools: Bash, Read, Grep, Glob
 ---
 
 Generate a merge request title and description for the current branch.
@@ -79,7 +79,34 @@ Use this template:
 - Related MRs: (if any)
 ```
 
-### 5. Output Format
+### 5. Check GitHub CLI Authentication
+
+```bash
+gh auth status 2>&1
+```
+
+### 6a. If Authenticated — Push and Create PR
+
+Push the branch and create the PR automatically:
+
+```bash
+# Push the branch
+git push -u origin $(git branch --show-current)
+
+# Create the PR using gh CLI
+BASE_BRANCH="${ARGUMENTS:-main}"
+gh pr create --base "$BASE_BRANCH" --title "[title here]" --body "$(cat <<'EOF'
+[description here]
+EOF
+)"
+```
+
+Output the PR URL returned by `gh pr create`:
+```
+✅ PR created: [URL]
+```
+
+### 6b. If NOT Authenticated — Output Copy-Paste Format
 
 Present the title and description in a copy-paste ready format:
 
@@ -95,9 +122,14 @@ MERGE REQUEST DESCRIPTION
 ═══════════════════════════════════════════════════════════════
 
 [description here]
+
+═══════════════════════════════════════════════════════════════
+ℹ️  GitHub CLI not authenticated — PR not created automatically.
+    Run `gh auth login` to enable auto-PR creation.
+═══════════════════════════════════════════════════════════════
 ```
 
-### 6. Update STANDUP.md (if exists)
+### 7. Update STANDUP.md (if exists)
 
 If `.claude-local/STANDUP.md` exists, add the MR preparation to the "Completed" section:
 

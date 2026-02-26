@@ -144,7 +144,38 @@ EOF
 
 After commit, run `git status` to confirm the commit succeeded.
 
-### Step 8: Update STANDUP.md (if exists)
+### Step 8: Auto-Push (if GitHub CLI authenticated)
+
+Check if `gh` CLI is authenticated:
+
+```bash
+gh auth status 2>&1
+```
+
+**If authenticated (exit code 0):**
+
+Push the branch automatically:
+
+```bash
+git push -u origin $(git branch --show-current)
+```
+
+Output:
+```
+✅ Pushed to origin/[branch-name]
+```
+
+**If NOT authenticated (exit code non-zero):**
+
+Output:
+```
+ℹ️  GitHub CLI not authenticated — commit is local only.
+    Run `gh auth login` to enable auto-push on future commits.
+```
+
+Do NOT attempt to push. Proceed to Step 9.
+
+### Step 9: Update STANDUP.md (if exists)
 
 If `.claude-local/STANDUP.md` exists, append the commit to the "Completed" section:
 
