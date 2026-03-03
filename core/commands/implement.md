@@ -262,6 +262,21 @@ Next steps:
 
 Update `.claude-local/IMPLEMENT_STATE.md` with final status.
 
+## Step 8: Clean Up Plan File
+
+Delete the plan file that was used for this implementation — its value is consumed, and the decisions are captured in git history, PR descriptions, and `/handoff`.
+
+```bash
+rm ~/.claude/plans/{plan-file-name}.md
+```
+
+Log it in the completion report:
+```
+Plan file cleaned up: ~/.claude/plans/{name}.md
+```
+
+**Do NOT delete the plan if any phase failed or was skipped.** Only clean up on full successful completion.
+
 ## Error Recovery
 
 | Situation | Action |
