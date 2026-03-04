@@ -40,7 +40,29 @@ git diff $BASE_BRANCH --name-only
 - Identify the main themes/areas of change
 - Note any breaking changes or migrations
 
-### 3. Generate MR Title
+### 3. Detect Version Bump
+
+Compare the VERSION file on the branch against the base branch:
+
+```bash
+BASE_VERSION=$(git show $BASE_BRANCH:VERSION 2>/dev/null || echo "")
+BRANCH_VERSION=$(cat VERSION 2>/dev/null || echo "")
+```
+
+If both versions exist and differ, parse semver (`major.minor.patch`) and determine:
+- **major** — first segment changed (breaking changes)
+- **minor** — second segment changed (new features, backward-compatible)
+- **patch** — third segment changed (bug fixes, small additions)
+- **none** — versions are the same or VERSION file doesn't exist
+
+**Validation heuristics** (warn, don't block):
+- `feat` commits + patch bump → ⚠️ "New feature with only a patch bump — is this intentional?"
+- Any commit message contains "BREAKING" or "breaking change" + non-major bump → ⚠️ "Breaking change detected but not a major bump"
+- Only `fix`/`docs`/`chore`/`test`/`refactor` commits + minor/major bump → ⚠️ "No feature commits but minor/major bump — is this intentional?"
+
+If a warning applies, include it in the PR description under `## Release` so the reviewer sees it.
+
+### 4. Generate MR Title
 
 Format: `<type>(DRNG-XX): <concise summary>`
 
@@ -50,7 +72,7 @@ Rules:
 - Summarize the overall change in under 72 characters
 - Use imperative mood ("Add" not "Added")
 
-### 4. Generate MR Description
+### 5. Generate MR Description
 
 Use this template:
 
@@ -58,6 +80,16 @@ Use this template:
 ## Summary
 
 [2-4 bullet points summarizing what this MR does]
+
+## Release
+
+`X.Y.Z` → `A.B.C` (patch|minor|major)
+
+[If validation warning applies, add it here, e.g.:]
+[⚠️ New feature commits detected with only a patch bump — is this intentional?]
+
+[If VERSION didn't change, use:]
+No version change
 
 ## Changes
 
@@ -79,13 +111,13 @@ Use this template:
 - Related MRs: (if any)
 ```
 
-### 5. Check GitHub CLI Authentication
+### 6. Check GitHub CLI Authentication
 
 ```bash
 gh auth status 2>&1
 ```
 
-### 6a. If Authenticated — Push and Create PR
+### 7a. If Authenticated — Push and Create PR
 
 Push the branch and create the PR automatically:
 
@@ -106,7 +138,7 @@ Output the PR URL returned by `gh pr create`:
 ✅ PR created: [URL]
 ```
 
-### 6b. If NOT Authenticated — Output Copy-Paste Format
+### 7b. If NOT Authenticated — Output Copy-Paste Format
 
 Present the title and description in a copy-paste ready format:
 
@@ -129,7 +161,7 @@ MERGE REQUEST DESCRIPTION
 ═══════════════════════════════════════════════════════════════
 ```
 
-### 7. Update STANDUP.md (if exists)
+### 8. Update STANDUP.md (if exists)
 
 If `.claude-local/STANDUP.md` exists, add the MR preparation to the "Completed" section:
 
