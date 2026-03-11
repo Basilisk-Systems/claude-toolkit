@@ -187,10 +187,16 @@ Concise but thorough. Code blocks with language tags. Explain non-obvious decisi
 - Challenge your own work before presenting it
 
 ### 6. Autonomous Bug Fixing
-- When given a bug report: just fix it. Don't ask for hand-holding
+- When given a bug report with a clear, isolated fix: just fix it
 - Point at logs, errors, failing tests — then resolve them
 - Zero context switching required from the user
-- Go fix failing CI tests without being told how
+
+### 7. Investigate-First (Interactive Work)
+- During interactive sessions (debugging, E2E testing, exploratory work), do NOT make code changes inline as you find issues
+- Cycle: (1) investigate → (2) document findings in HANDOFF.md → (3) keep looking → (4) blueprint all fixes → (5) implement from plan
+- Exceptions: lint fixes, unit test mechanical fixes during `/implement` are fine
+- Anything involving logic changes, infra, or multi-file coordination goes through the investigate → document → blueprint → implement cycle
+- Rationale: reactive inline fixes inject upstream bugs, miss second-order effects, and skip strategic thinking
 
 ## Task Management
 
