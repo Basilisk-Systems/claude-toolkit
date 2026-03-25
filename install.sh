@@ -18,6 +18,7 @@ INSTALL_WORKFLOW=false
 INSTALL_SKILLS=false
 INSTALL_HOOKS=false
 INSTALL_CONFIG=false
+INSTALL_GOVCLOUD=false
 FORCE=false
 DRY_RUN=false
 
@@ -57,6 +58,7 @@ Options:
   --with-skills     Also install knowledge skills
   --with-hooks      Also install global hooks
   --with-config     Also install CLAUDE.md/settings.json templates
+  --with-govcloud   Also install GovCloud-specific skills (FedRAMP, compliance)
   --all             Install everything
   --force           Overwrite existing files (backs up config first)
   --dry-run         Show what would be done without doing it
@@ -77,11 +79,13 @@ while [[ $# -gt 0 ]]; do
         --with-skills)   INSTALL_SKILLS=true ;;
         --with-hooks)    INSTALL_HOOKS=true ;;
         --with-config)   INSTALL_CONFIG=true ;;
+        --with-govcloud) INSTALL_GOVCLOUD=true ;;
         --all)
             INSTALL_WORKFLOW=true
             INSTALL_SKILLS=true
             INSTALL_HOOKS=true
             INSTALL_CONFIG=true
+            INSTALL_GOVCLOUD=true
             ;;
         --force)    FORCE=true ;;
         --dry-run)  DRY_RUN=true ;;
@@ -290,6 +294,18 @@ if [[ "$INSTALL_SKILLS" == true ]]; then
 fi
 
 # =============================================================================
+# GovCloud Skills (optional)
+# =============================================================================
+if [[ "$INSTALL_GOVCLOUD" == true ]]; then
+    echo -e "${GREEN}[govcloud]${NC} GovCloud-specific skills"
+    for skill_dir in "${SCRIPT_DIR}"/skills-govcloud/*/; do
+        [[ -d "$skill_dir" ]] || continue
+        name="$(basename "$skill_dir")"
+        symlink_file "${skill_dir%/}" "${CLAUDE_DIR}/skills/${name}" "skills-govcloud"
+    done
+fi
+
+# =============================================================================
 # Hooks
 # =============================================================================
 if [[ "$INSTALL_HOOKS" == true ]]; then
@@ -357,6 +373,7 @@ if [[ "$DRY_RUN" != true ]]; then
         echo "manifest['groups'].append('core')"
         [[ "$INSTALL_WORKFLOW" == true ]] && echo "manifest['groups'].extend(['workflow', 'bin'])" || true
         [[ "$INSTALL_SKILLS" == true ]] && echo "manifest['groups'].append('skills')" || true
+        [[ "$INSTALL_GOVCLOUD" == true ]] && echo "manifest['groups'].append('skills-govcloud')" || true
         [[ "$INSTALL_HOOKS" == true ]] && echo "manifest['groups'].append('hooks')" || true
         [[ "$INSTALL_CONFIG" == true ]] && echo "manifest['groups'].append('config')" || true
         # Files

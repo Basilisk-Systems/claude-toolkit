@@ -15,7 +15,24 @@ date +%Y-%m-%d
 ```
 Use this date for all CHANGELOG entries.
 
-### Step 2: Gather Context
+### Step 2: Mark Ticket Complete (if applicable)
+
+If the argument looks like a ticket ID (e.g., `DRNG-98`, `CAR-12`, or any `PREFIX-NUMBER` pattern):
+
+1. Search for a ticket tracking file (e.g., `docs/V1_TICKETS.md`, `docs/TICKETS.md`, or similar):
+   ```bash
+   # Look for ticket tracking files
+   ls docs/*TICKET* docs/*ticket* 2>/dev/null
+   ```
+
+2. If found, search for the ticket section and mark all acceptance criteria checkboxes as complete:
+   - Find lines matching `- [ ]` under the ticket's section
+   - Replace `- [ ]` with `- [x]` for all acceptance criteria in that ticket
+   - Do NOT modify checkboxes belonging to other tickets
+
+3. If no ticket file is found, skip this step silently.
+
+### Step 3: Gather Context
 1. Read the current version from `package.json` or `pyproject.toml`:
    ```bash
    # For Node.js
@@ -29,7 +46,7 @@ Use this date for all CHANGELOG entries.
 
 3. Summarize what was accomplished in this task
 
-### Step 3: Evaluate Version Bump
+### Step 4: Evaluate Version Bump
 
 **Analyze commits since the last version tag to determine if a version bump is warranted.**
 
@@ -64,7 +81,7 @@ Use this date for all CHANGELOG entries.
    - Update `pyproject.toml` version field (if it exists)
    - These version file changes will be committed by the user later (or by `/commit`)
 
-### Step 4: Determine CHANGELOG Action
+### Step 5: Determine CHANGELOG Action
 
 **Based on the version decision from Step 3:**
 
@@ -77,7 +94,7 @@ Use this date for all CHANGELOG entries.
 - If no CHANGELOG.md exists:
   → **CREATE** the file with proper format
 
-### Step 5: Update CHANGELOG.md
+### Step 6: Update CHANGELOG.md
 
 Use this format (Keep a Changelog style):
 
@@ -119,7 +136,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reference ticket/issue IDs if provided
 - Be specific about what changed and why
 
-### Step 6: Evaluate README Updates
+### Step 7: Evaluate README Updates
 
 Check if README.md needs updates for any of these:
 - [ ] New features that users need to know about
@@ -131,7 +148,7 @@ Check if README.md needs updates for any of these:
 
 **Only update README if the changes are user-facing.**
 
-### Step 7: Update STANDUP.md (if exists)
+### Step 8: Update STANDUP.md (if exists)
 
 If `.claude-local/STANDUP.md` exists, add the completed task to the "Completed" section:
 
@@ -146,13 +163,16 @@ If found, add a line to the "## Completed" section:
 
 Group intelligently with existing entries if they're related to the same ticket/feature.
 
-### Step 8: Output Summary
+### Step 9: Output Summary
 
 ```markdown
 ## Task Completed ✓
 
 ### Summary
 [What was accomplished]
+
+### Ticket Updated
+- [Yes (ticket ID, file path) / No / N/A — no ticket ID provided]
 
 ### Version Bump
 - Previous: [X.Y.Z]
