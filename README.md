@@ -2,6 +2,10 @@
 
 A shareable collection of Claude Code commands, skills, hooks, and configuration. Selective install — pick what you need.
 
+## Why this exists
+
+Claude Code is powerful out of the box, but teams quickly accumulate their own slash commands, safety hooks, knowledge skills, and global config. Without a shared structure, these live in individual `~/.claude/` directories — hard to sync, easy to drift. This toolkit gives you a single repo to maintain that collection, with a symlink-based installer so updates propagate instantly and everyone on the team runs the same setup.
+
 ## Quick Start
 
 ```bash
@@ -178,3 +182,125 @@ git pull
 ```
 
 Changes take effect immediately. For config files (CLAUDE.md, settings.json), re-run `./install.sh --with-config --force` to get the latest templates.
+
+## Extending the Toolkit
+
+### Adding a Skill
+
+Skills are knowledge files that Claude loads automatically when the topic is relevant. Each skill lives in its own directory under `skills/` and contains a single `SKILL.md` with YAML frontmatter.
+
+1. Create a directory: `skills/<skill-name>/`
+2. Add a `SKILL.md` with this structure:
+
+```markdown
+---
+name: my-skill
+description: One-line description. Claude uses this to decide when to load the skill.
+allowed-tools: Read, Glob, Grep
+---
+
+# Skill Title
+
+Content goes here — patterns, rules, examples, reference material.
+Claude reads this as context whenever the skill triggers.
+```
+
+3. Add a row to the **Skills** table in this README.
+4. If the skill should be referenced in `CLAUDE.md`, add a line to `config/snippets/skills.md`.
+5. Run `./install.sh --with-skills` — the installer symlinks the entire directory into `~/.claude/skills/`.
+
+**Tips:**
+- The `description` field is what Claude matches on — make it specific about *when* to trigger (e.g., "Use when working with DynamoDB single-table design" not "DynamoDB stuff").
+- `allowed-tools` controls what Claude can use while the skill is active. Most knowledge-only skills need just `Read, Glob, Grep`.
+- Keep skills focused. A 200-line skill on one topic loads faster and triggers more reliably than a 2000-line omnibus.
+
+### Adding a Hook
+
+Hooks are shell scripts that Claude Code executes at specific lifecycle points. Global hooks live in `hooks/` and project-level hooks live in `templates/claude-project/hooks/`.
+
+1. Create your script in `hooks/` (global) or `templates/claude-project/hooks/` (per-project):
+
+```bash
+#!/bin/bash
+# =============================================================================
+# HOOK NAME
+# =============================================================================
+# PURPOSE: What this hook does
+# TRIGGER: PreToolUse:Bash, PostToolUse:Write, etc.
+# =============================================================================
+
+INPUT=$(cat)
+
+# Extract tool input fields with jq (fallback to grep)
+if command -v jq &> /dev/null; then
+    VALUE=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+else
+    VALUE=$(echo "$INPUT" | grep -oP '"command"\s*:\s*"\K[^"]+')
+fi
+
+# Your logic here...
+
+# Exit codes:
+#   exit 0                                     → Allow
+#   exit 2                                     → Block (silent)
+#   echo '{"decision": "block", "reason": "..."}' → Block with message
+#   echo '{"decision": "ask", "reason": "..."}'   → Prompt user
+```
+
+2. Make it executable: `chmod +x hooks/my-hook.sh`
+3. Add a row to the **Hooks** table in this README.
+4. Register the hook in the appropriate `settings.json`. For global hooks, add an entry to `config/settings.json`; for project hooks, add it to `templates/claude-project/settings.json`.
+
+**Available triggers:**
+- `PreToolUse:<ToolName>` — runs before a tool call (can block it)
+- `PostToolUse:<ToolName>` — runs after a tool call completes
+- `Notification` — runs on Claude Code notifications
+- `Stop` — runs when Claude finishes a response
+
+**Tips:**
+- Always read from stdin (`INPUT=$(cat)`) — Claude Code pipes the tool call as JSON.
+- Prefer `jq` for parsing with a `grep` fallback so hooks work on minimal systems.
+- Keep hooks fast. They run synchronously and block Claude Code while executing.
+
+### Adding Agents (Commands with Sub-agents)
+
+Commands that orchestrate sub-agents (like `/implement` and `/code-review`) live alongside regular commands as `.md` files. The difference is that they use the `Agent` tool to spawn focused workers.
+
+1. Create a command file in `core/commands/` or `workflow/commands/`:
+
+```markdown
+---
+description: What this command does
+argument-hint: <optional-arg>
+allowed-tools: Read, Bash, Glob, Grep, Agent, AskUserQuestion
+---
+
+# Command Title
+
+## Step 1: Gather Context
+
+Describe what the main agent should do first.
+
+## Step 2: Spawn Workers
+
+Use the Agent tool to delegate focused sub-tasks:
+
+- **Agent 1 — Analysis**: Describe focus area. Report findings in under 200 words.
+- **Agent 2 — Validation**: Describe what to check.
+
+Run independent agents in parallel. Wait for results before proceeding.
+
+## Step 3: Synthesize
+
+Combine agent results and present to the user.
+```
+
+2. Add `Agent` to the `allowed-tools` frontmatter.
+3. Add a row to the appropriate command table in this README.
+4. If it belongs in the workflow module, update `config/snippets/workflow.md` so the command appears in `CLAUDE.md` after install.
+
+**Tips:**
+- Give each sub-agent a self-contained prompt — it has no context from the parent conversation.
+- Specify what the agent should report back and set a word limit to keep results focused.
+- Use `model: sonnet` in agent calls for routine work; default (Opus) for tasks requiring deeper reasoning.
+- Commands in `core/commands/` are always installed; commands in `workflow/commands/` require `--with-workflow`.
