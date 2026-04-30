@@ -206,3 +206,4 @@ Apply these six pillars when designing CDK infrastructure:
 - [ ] CORS by environment (never `ALL_ORIGINS` in prod)
 - [ ] Set RemovalPolicy (RETAIN for prod, DESTROY for dev)
 - [ ] Never hardcode credentials or account IDs
+- [ ] ASCII-only in resource descriptions (security groups, IAM, etc.) - AWS APIs reject non-ASCII (em dashes, curly quotes, etc.)

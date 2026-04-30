@@ -36,7 +36,18 @@ Collect and store:
 - `COMMITS` — commit messages for intent understanding
 - `REPO_ROOT` — absolute path to repo root
 
-## Step 2: Classify Changed Files
+## Step 2: Filter and Classify Changed Files
+
+### Exclude non-application folders
+
+Remove files matching these patterns from the changed files list **before** passing to agents:
+- `.claude/` — Claude Code hooks and settings (tooling config, not application code)
+- `docs/` — documentation files (not reviewable code)
+- `*.md` in the repo root — project markdown (CLAUDE.md, README.md, CHANGELOG.md, etc.)
+
+These folders are **never** passed to any review agent. Only application code, tests, infrastructure, and config files are reviewed.
+
+### Classify remaining files
 
 Group changed files for agent routing:
 - **Python source**: `*.py` excluding `test_*.py`
@@ -45,7 +56,7 @@ Group changed files for agent routing:
 - **Config**: `*.json`, `*.yaml`, `*.toml`, `*.cfg`
 - **Frontend**: `*.ts`, `*.tsx`, `*.js`, `*.jsx`, `*.css`
 
-If no files changed, output "Nothing to review" and stop.
+If no files remain after filtering, output "Nothing to review" and stop.
 
 ## Step 3: Spawn Review Agents in Parallel
 

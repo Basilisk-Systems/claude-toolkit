@@ -170,7 +170,7 @@ Do NOT:
 
 Use the **Task** tool:
 - `subagent_type`: `"general-purpose"`
-- `model`: `"opus"`
+- `model`: `"sonnet"`
 - `max_turns` based on phase complexity:
   - Small (1-3 files, straightforward): **15 turns**
   - Medium (4-7 files, moderate logic): **20 turns**
@@ -189,11 +189,11 @@ git diff HEAD~1 --stat
 2. **If agent committed successfully:**
    - Update `.claude-local/IMPLEMENT_STATE.md` with: status=completed, commit hash, files changed, notes
 
-3. **If agent failed to commit:**
+3. **If agent failed to commit (escalate to Opus):**
    - Run `git status` and `git diff --stat` to assess partial work
    - If work is partially done with passing tests: stage and commit the partial work, note the gap
-   - If tests failed: report to user, offer to spawn a fix-up agent (max_turns: 10)
-   - If agent ran out of turns: report progress, spawn a continuation agent for remaining work in this phase
+   - If tests failed: report to user, offer to spawn a fix-up agent (`model: "opus"`, max_turns: 10) — include the Sonnet agent's error output and failing test names in the prompt so Opus has full context
+   - If agent ran out of turns: report progress, spawn a continuation agent (`model: "opus"`) for remaining work in this phase — include a summary of what was completed and what remains
 
 4. **If the agent reported issues:**
    - Minor (warnings, style nits): log in state file, continue to next phase
@@ -289,7 +289,7 @@ Plan file cleaned up: ~/.claude/plans/{name}.md
 
 ## Rules
 
-1. **Always use Opus** for implementation agents
+1. **Sonnet-first, Opus on escalation** — use Sonnet for implementation agents; escalate to Opus for fix-up or continuation agents when Sonnet fails
 2. **Sequential execution only** — never run phases in parallel (they share the working tree)
 3. **Verify every commit** — run `git log` and `git diff` after each agent, don't trust self-reports alone
 4. **Stop on blocking failures** — never silently continue past broken tests
