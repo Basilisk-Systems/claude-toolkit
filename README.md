@@ -61,6 +61,33 @@ Knowledge files that auto-load when relevant:
 - `react-state` — Redux Toolkit, RTK Query
 - `security` — OWASP/NIST security best practices
 
+### Teams (`teams/`)
+
+Multi-agent team systems — coordinated groups of specialized agents that run together on a shared project context. Unlike commands (which Claude runs directly) or skills (which auto-load as context), teams are **sets of INSTRUCTIONS.md files** that you deploy into your project's `.agents/` directory and trigger via prompts.
+
+#### Marketing Team
+
+A 7-agent marketing team covering the full marketing function:
+
+| Agent | Specialty |
+|---|---|
+| 07 · Strategy | Sets daily priorities; synthesizes weekly cross-team report |
+| 01 · SEO & Content | Organic search, content briefs, technical SEO |
+| 04 · Paid & Measurement | Paid channels, analytics, attribution |
+| 06 · Sales & GTM | RevOps, competitive intel, sales enablement |
+| 03 · Content & Copy | Copywriting, cold email, social, ad copy |
+| 02 · CRO | A/B testing, funnel optimization, page audits |
+| 05 · Growth & Retention | Churn prevention, referral, win-back |
+
+Agents run in a defined sequence, hand off to each other via `inputs/` folders, and surface to the human only on budget decisions or strategic pivots. See [teams/marketing/README.md](teams/marketing/README.md) for setup and trigger prompts.
+
+**To deploy:**
+
+1. Copy `teams/marketing/agents/*/INSTRUCTIONS.md` into your project's `.agents/marketing-team/[agent]/`
+2. Copy `ORCHESTRATOR.md` and `OUTPUT-STANDARDS.md` into `.agents/marketing-team/`
+3. Create `context/[PROJECT-ID]/` using the templates in `teams/marketing/context-template/`
+4. Add any project-specific standing directives to each agent's INSTRUCTIONS.md
+
 ### Hooks (`--with-hooks`)
 
 **Global** shell hooks for formatting, safety, and session management (installed to `~/.claude/hooks/`):
