@@ -1,12 +1,25 @@
 ---
 description: Generate a merge request title and description summarizing branch commits
-argument-hint: [base-branch (default: main)]
+argument-hint: [base-branch (default: main) | "release" for dev→main version PR]
 allowed-tools: Bash, Read, Grep, Glob
 ---
 
 Generate a merge request title and description for the current branch.
 
-## Process
+## Mode Detection
+
+Check if this is a **release PR** (version promotion from `dev` → `main`):
+
+```bash
+MODE="${ARGUMENTS:-feature}"
+```
+
+- If `ARGUMENTS` is `release` → **Release mode** (skip to § Release Mode below)
+- Otherwise → **Feature mode** (standard behavior, `ARGUMENTS` is the base branch)
+
+---
+
+## Feature Mode (default)
 
 ### 1. Gather Branch Information
 
@@ -180,3 +193,121 @@ If found, add a line to the "## Completed" section:
 - For multi-commit branches, synthesize an overall narrative
 - Highlight any commits that seem out of scope or potentially problematic
 - If the branch appears to be a work-in-progress, note that
+
+---
+
+## Release Mode (`/pre-merge release`)
+
+Creates a version promotion PR from `dev` → `main`. Must be run while on the `dev` branch.
+
+### R1. Validate State
+
+```bash
+# Must be on dev branch
+git branch --show-current
+
+# Get version from dev
+cat VERSION 2>/dev/null
+
+# Get version from main for comparison
+git show main:VERSION 2>/dev/null
+```
+
+- If NOT on `dev` branch → error: "Release PRs must be created from the `dev` branch. Run `git checkout dev` first."
+- If VERSION on dev == VERSION on main → warn: "No version bump detected on `dev`. Did you forget to bump?"
+
+### R2. Gather Release Context
+
+```bash
+# Commits on dev not yet in main
+git log main..dev --oneline
+
+# Merged PRs targeting dev (closed + merged)
+gh pr list --state merged --base dev --json number,title,headRefName,mergedAt --jq '.[] | "PR #\(.number): \(.title) (\(.headRefName))"'
+
+# File change summary
+git diff main --stat
+
+# Changed files list
+git diff main --name-only
+```
+
+### R3. Read CHANGELOG
+
+Read the CHANGELOG.md to pull the entry for the version being released. Use it as the source of truth for what's included — it was curated during `/complete`.
+
+### R4. Generate Release PR Title
+
+Format: `vX.Y.Z`
+
+Use the version from the `VERSION` file on `dev`. Match the convention from prior release PRs (e.g., PR #7 titled `v0.6.0`).
+
+### R5. Generate Release PR Description
+
+Use this template:
+
+```markdown
+## Release vX.Y.Z
+
+Promotes `dev` → `main` with changes from [N] feature PRs.
+
+### Version
+
+`X.Y.Z` → `A.B.C` (patch|minor|major)
+
+### Included PRs
+
+| PR | Title | Branch |
+|----|-------|--------|
+| #N | [Title] | branch-name |
+| ... | ... | ... |
+
+### Changelog
+
+[Copy the relevant version entry from CHANGELOG.md verbatim]
+
+### Test Summary
+
+- Total web tests: [N]
+- Total infra tests: [N]
+- Pre-commit hooks: [N]/[N] passing
+
+### Blockers / Known Issues
+
+[List any E2E items blocked on deploy, DNS, etc. — or "None"]
+```
+
+### R6. Check GitHub CLI Authentication
+
+```bash
+gh auth status 2>&1
+```
+
+### R7a. If Authenticated — Push and Create PR
+
+```bash
+# Ensure dev is pushed and up to date
+git push -u origin dev
+
+# Create the release PR
+gh pr create --base main --title "vX.Y.Z" --body "$(cat <<'EOF'
+[description here]
+EOF
+)"
+```
+
+Output the PR URL:
+```
+✅ Release PR created: [URL]
+```
+
+### R7b. If NOT Authenticated — Output Copy-Paste Format
+
+Same format as Feature Mode § 7b.
+
+### R8. Update STANDUP.md (if exists)
+
+If `.claude-local/STANDUP.md` exists, add:
+```markdown
+- [x] Release PR prepared: dev → main (vX.Y.Z)
+```
