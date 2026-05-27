@@ -61,6 +61,47 @@ Knowledge files that auto-load when relevant:
 - `react-state` — Redux Toolkit, RTK Query
 - `security` — OWASP/NIST security best practices
 
+### Teams (`teams/`)
+
+Multi-agent team systems — coordinated groups of specialized agents that run together on a shared project context. Unlike commands (which Claude runs directly) or skills (which auto-load as context), teams are **sets of INSTRUCTIONS.md files** that you deploy into your project's `.agents/` directory and trigger via prompts.
+
+#### Marketing Team
+
+A 7-agent marketing team covering the full marketing function:
+
+| Agent | Specialty |
+|---|---|
+| 07 · Strategy | Sets daily priorities; synthesizes weekly cross-team report |
+| 01 · SEO & Content | Organic search, content briefs, technical SEO |
+| 04 · Paid & Measurement | Paid channels, analytics, attribution |
+| 06 · Sales & GTM | RevOps, competitive intel, sales enablement |
+| 03 · Content & Copy | Copywriting, cold email, social, ad copy |
+| 02 · CRO | A/B testing, funnel optimization, page audits |
+| 05 · Growth & Retention | Churn prevention, referral, win-back |
+
+Agents run in a defined sequence, hand off to each other via `inputs/` folders, and surface to the human only on budget decisions or strategic pivots. See [teams/marketing/README.md](teams/marketing/README.md) for setup and trigger prompts.
+
+#### Product Team
+
+A 5-agent product team covering the full product function:
+
+| Agent | Specialty |
+|---|---|
+| 01 · CPO | Sets daily strategic direction; synthesizes weekly cross-team report |
+| 02 · Director of Product | Roadmap, PRDs, scoping, competitive analysis |
+| 03 · Product Ops | OKRs, metrics, timelines, team rituals |
+| 04 · PM | User research, specs, PMF signal tracking, problem definition |
+| 05 · APM | Surveys, fake door tests, dogfooding, onboarding analysis |
+
+Agents run sequentially with the CPO brief gating all others. Hand off via `inputs/` folders. Designed to work alongside the marketing team — cross-team output paths are pre-wired. See [teams/product/README.md](teams/product/README.md) for setup and trigger prompts.
+
+**To deploy either team:**
+
+1. Copy `teams/[team]/agents/*/INSTRUCTIONS.md` into your project's `.agents/[team]-team/[agent]/`
+2. Copy `ORCHESTRATOR.md` and `OUTPUT-STANDARDS.md` into `.agents/[team]-team/`
+3. Create `context/[PROJECT-ID]/` using the templates in `teams/[team]/context-template/`
+4. Add project-specific standing directives to each agent's INSTRUCTIONS.md
+
 ### Hooks (`--with-hooks`)
 
 **Global** shell hooks for formatting, safety, and session management (installed to `~/.claude/hooks/`):
