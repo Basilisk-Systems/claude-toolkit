@@ -81,12 +81,26 @@ A 7-agent marketing team covering the full marketing function:
 
 Agents run in a defined sequence, hand off to each other via `inputs/` folders, and surface to the human only on budget decisions or strategic pivots. See [teams/marketing/README.md](teams/marketing/README.md) for setup and trigger prompts.
 
-**To deploy:**
+#### Product Team
 
-1. Copy `teams/marketing/agents/*/INSTRUCTIONS.md` into your project's `.agents/marketing-team/[agent]/`
-2. Copy `ORCHESTRATOR.md` and `OUTPUT-STANDARDS.md` into `.agents/marketing-team/`
-3. Create `context/[PROJECT-ID]/` using the templates in `teams/marketing/context-template/`
-4. Add any project-specific standing directives to each agent's INSTRUCTIONS.md
+A 5-agent product team covering the full product function:
+
+| Agent | Specialty |
+|---|---|
+| 01 · CPO | Sets daily strategic direction; synthesizes weekly cross-team report |
+| 02 · Director of Product | Roadmap, PRDs, scoping, competitive analysis |
+| 03 · Product Ops | OKRs, metrics, timelines, team rituals |
+| 04 · PM | User research, specs, PMF signal tracking, problem definition |
+| 05 · APM | Surveys, fake door tests, dogfooding, onboarding analysis |
+
+Agents run sequentially with the CPO brief gating all others. Hand off via `inputs/` folders. Designed to work alongside the marketing team — cross-team output paths are pre-wired. See [teams/product/README.md](teams/product/README.md) for setup and trigger prompts.
+
+**To deploy either team:**
+
+1. Copy `teams/[team]/agents/*/INSTRUCTIONS.md` into your project's `.agents/[team]-team/[agent]/`
+2. Copy `ORCHESTRATOR.md` and `OUTPUT-STANDARDS.md` into `.agents/[team]-team/`
+3. Create `context/[PROJECT-ID]/` using the templates in `teams/[team]/context-template/`
+4. Add project-specific standing directives to each agent's INSTRUCTIONS.md
 
 ### Hooks (`--with-hooks`)
 
