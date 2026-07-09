@@ -1,6 +1,6 @@
 ---
 name: aws-cdk-patterns
-description: CDK L3 constructs, modular patterns, and refactoring safety. Use when creating reusable constructs, refactoring stacks, or reorganizing CDK code.
+description: CDK L3 construct design, modular stack organization, and refactoring safety (logical ID stability, stateful resources). TRIGGER when creating reusable constructs, splitting or reorganizing CDK stacks, or user asks about construct libraries, cross-stack references, or refactoring CDK without resource replacement. Do NOT trigger for initial CDK project setup (use aws-cdk-core) or non-CDK AWS work.
 ---
 
 # AWS CDK Patterns & Refactoring

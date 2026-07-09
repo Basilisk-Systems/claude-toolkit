@@ -29,24 +29,19 @@
       "Bash(aws logs:*)"
     ],
     "deny": [
-      "Bash(rm -rf /)*",
-      "Bash(rm -rf ~)*",
-      "Bash(sudo rm)*",
-      "Bash(*> /dev/sd*)*",
-      "Bash(mkfs*)*",
-      "Bash(dd if=*)*"
+      "Bash(sudo rm:*)",
+      "Bash(mkfs:*)"
     ],
     "defaultMode": "acceptEdits"
   },
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "~/.claude/hooks/session-start.sh",
-            "timeout": 5000
+            "timeout": 10
           }
         ]
       }
@@ -58,7 +53,7 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/bash-safety.sh",
-            "timeout": 5000
+            "timeout": 10
           }
         ]
       },
@@ -68,17 +63,12 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/write-safety.sh",
-            "timeout": 5000
-          }
-        ]
-      },
-      {
-        "matcher": "Write(*CHANGELOG*)|Edit(*CHANGELOG*)",
-        "hooks": [
+            "timeout": 10
+          },
           {
             "type": "command",
             "command": "~/.claude/hooks/changelog-validator.sh",
-            "timeout": 5000
+            "timeout": 10
           }
         ]
       }
@@ -90,54 +80,32 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/log-commands.sh",
-            "timeout": 5000
+            "timeout": 10
           },
           {
             "type": "command",
             "command": "~/.claude/hooks/post-commit-complete.sh",
-            "timeout": 5000
+            "timeout": 10
           }
         ]
       },
       {
-        "matcher": "Write(*.py)|Edit(*.py)",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
             "command": "~/.claude/hooks/format-python.sh",
-            "timeout": 30000
-          }
-        ]
-      },
-      {
-        "matcher": "Write(*.ts)|Write(*.tsx)|Write(*.js)|Write(*.jsx)|Edit(*.ts)|Edit(*.tsx)|Edit(*.js)|Edit(*.jsx)",
-        "hooks": [
+            "timeout": 60
+          },
           {
             "type": "command",
             "command": "~/.claude/hooks/format-typescript.sh",
-            "timeout": 30000
-          }
-        ]
-      },
-      {
-        "matcher": "Write(*.json)|Edit(*.json)",
-        "hooks": [
+            "timeout": 60
+          },
           {
             "type": "command",
             "command": "~/.claude/hooks/format-json.sh",
-            "timeout": 10000
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/context-monitor.sh",
-            "timeout": 5000
+            "timeout": 30
           }
         ]
       }

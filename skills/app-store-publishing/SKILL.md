@@ -1,6 +1,6 @@
 ---
 name: app-store-publishing
-description: App Store and Play Store publishing for React Native + Expo apps. Covers review processes, health app requirements, EAS Build/Submit, IAP with RevenueCat, versioning, OTA updates, and launch checklists.
+description: App Store and Play Store publishing for React Native + Expo apps - review guidelines, health-app requirements, EAS Build/Submit, IAP vs web payments, versioning, OTA updates, launch checklists. TRIGGER when editing eas.json or store metadata, or user asks about app submission, review rejections, TestFlight, Play Console, IAP, or release process. Do NOT trigger for day-to-day RN feature work or web deployments.
 ---
 
 # App Store & Play Store Publishing
@@ -29,11 +29,11 @@ description: App Store and Play Store publishing for React Native + Expo apps. C
 - Any "digital content consumed within the app"
 
 ### CAN use External Payments
-- **Physical goods/services** — Not applicable to Iduna
+- **Physical goods/services** — Not applicable to a typical health/fitness app
 - **Reader app exemption** — Apps whose primary purpose is accessing previously purchased content (Netflix, Kindle). Not applicable.
-- **Web-initiated subscriptions** — If user subscribes on your website BEFORE downloading the app, you can unlock features without IAP. This is the Lemon Squeezy path for Iduna.
+- **Web-initiated subscriptions** — If user subscribes on your website BEFORE downloading the app, you can unlock features without IAP. This is the web-checkout (e.g., Lemon Squeezy) path.
 
-### Iduna Payment Strategy
+### Recommended Payment Strategy
 - **Mobile:** RevenueCat for IAP subscriptions (Apple/Google get their cut)
 - **Web:** Lemon Squeezy (no platform commission)
 - **Cross-platform:** RevenueCat + Lemon Squeezy both write to a shared subscription status. Server checks both when validating entitlements.
@@ -55,18 +55,18 @@ description: App Store and Play Store publishing for React Native + Expo apps. C
     "preview": {
       "distribution": "internal",
       "channel": "preview",
-      "env": { "EXPO_PUBLIC_API_URL": "https://dev-api.iduna.app" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://dev-api.example.com" }
     },
     "production": {
       "channel": "production",
       "autoIncrement": true,
-      "env": { "EXPO_PUBLIC_API_URL": "https://api.iduna.app" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://api.example.com" }
     }
   },
   "submit": {
     "production": {
       "ios": {
-        "appleId": "scott@iduna.app",
+        "appleId": "you@example.com",
         "ascAppId": "1234567890",
         "appleTeamId": "XXXXXXXXXX"
       },
@@ -118,9 +118,9 @@ eas build --profile production --platform all --auto-submit
 
 ### Common Rejection Reasons for Health Apps
 
-1. **Insufficient HealthKit usage description** — "We need your health data" is rejected. Must explain specifically: "Iduna reads your dietary energy, protein, exercise, and weight data to compare your current patterns against your established baseline and detect behavioral drift."
+1. **Insufficient HealthKit usage description** — "We need your health data" is rejected. Must explain specifically, e.g.: "This app reads your dietary energy, protein, exercise, and weight data to compare your current patterns against your established baseline and detect behavioral drift."
 
-2. **Medical claims** — NEVER claim to diagnose, treat, or prevent any condition. Iduna must explicitly disclaim: "This app is not a medical device and does not provide medical advice."
+2. **Medical claims** — NEVER claim to diagnose, treat, or prevent any condition. Health apps must explicitly disclaim: "This app is not a medical device and does not provide medical advice."
 
 3. **Missing privacy policy** — Must be hosted at a public URL, linked in App Store Connect, and cover: what health data you collect, how it's stored, how it's shared (or not), deletion process.
 
@@ -130,18 +130,18 @@ eas build --profile production --platform all --auto-submit
 
 ### App Store Metadata Requirements (iOS)
 
-| Field | Requirement | Iduna Recommendation |
+| Field | Requirement | Example (health/fitness app) |
 |-------|------------|---------------------|
-| Name | ≤30 chars | "Iduna - Drift Tracker" |
-| Subtitle | ≤30 chars | "Post-GLP-1 Maintenance" |
+| Name | ≤30 chars | "AppName - Short Descriptor" |
+| Subtitle | ≤30 chars | Concise value prop |
 | Description | ≤4000 chars | Focus on problem + solution |
-| Keywords | ≤100 chars | "glp1,wegovy,ozempic,maintenance,weight,drift,nutrition" |
+| Keywords | ≤100 chars | Comma-separated, no spaces, target niche terms |
 | Category | Primary + Secondary | Health & Fitness + Lifestyle |
-| Screenshots | 6.7" + 6.5" + 5.5" (iPhone), optional iPad | Dashboard, log screen, drift chart, weekly summary, onboarding |
+| Screenshots | 6.7" + 6.5" + 5.5" (iPhone), optional iPad | Dashboard, log screen, charts, weekly summary, onboarding |
 | App Privacy | Data types, usage, linked to identity? | Health, Nutrition, Exercise, Body Measurements, Contact Info (email) |
 | Age Rating | Questionnaire | 4+ (no mature content) |
-| Support URL | Required | https://iduna.app/support |
-| Privacy Policy URL | Required | https://iduna.app/privacy |
+| Support URL | Required | https://example.com/support |
+| Privacy Policy URL | Required | https://example.com/privacy |
 
 ### Play Store Requirements (Android)
 
@@ -255,13 +255,13 @@ function checkForceUpdate() {
   if (currentVersion && semverLt(currentVersion, MIN_VERSION)) {
     Alert.alert(
       'Update Required',
-      'A new version of Iduna is available. Please update to continue.',
+      'A new version of the app is available. Please update to continue.',
       [{
         text: 'Update',
         onPress: () => {
           const storeUrl = Platform.OS === 'ios'
-            ? 'itms-apps://apps.apple.com/app/iduna/id1234567890'
-            : 'market://details?id=com.iduna.app';
+            ? 'itms-apps://apps.apple.com/app/yourapp/id1234567890'
+            : 'market://details?id=com.example.yourapp';
           Linking.openURL(storeUrl);
         },
       }],

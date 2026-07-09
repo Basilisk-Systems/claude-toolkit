@@ -106,9 +106,9 @@ Format output for easy copying to Slack/Teams/Jira:
 
 Rules for summary:
 - "Yesterday" = Previous Period completed items, OR Current Period completed if started today
-- "Today" = In Progress items. If empty, infer from branch name (e.g., "DRNG-44" → "Working on DRNG-44")
+- "Today" = In Progress items. If empty, infer from branch name (e.g., "TICKET-44" → "Working on TICKET-44")
 - "Blockers" = Blockers section, default to "None"
-- Keep items concise - strip ticket prefixes like `feat(DRNG-XX):` to just the description
+- Keep items concise - strip ticket prefixes like `feat(TICKET-XX):` to just the description
 - Use bullet points for multiple items
 
 ### 5. Write summary to file

@@ -1,6 +1,6 @@
 ---
 name: healthkit-health-connect
-description: Apple HealthKit and Android Health Connect integration for React Native + Expo apps. Covers data reading, permissions, background sync, nutrition/exercise/weight specifics, and import deduplication.
+description: Apple HealthKit and Android Health Connect integration for React Native + Expo apps - permissions, reading nutrition/exercise/weight data, sync strategies, import deduplication. TRIGGER when code uses react-native-health or react-native-health-connect, NSHealthShareUsageDescription keys, or user asks about importing data from Apple Health or Health Connect. Do NOT trigger for app-internal health data that never touches platform health stores.
 ---
 
 # HealthKit & Health Connect Integration
@@ -60,7 +60,7 @@ export default {
   ios: {
     infoPlist: {
       NSHealthShareUsageDescription:
-        'Iduna reads your nutrition, exercise, and weight data to detect drift from your baseline patterns.',
+        'YourApp reads your nutrition, exercise, and weight data to detect drift from your baseline patterns.',
     },
   },
 };
@@ -97,7 +97,7 @@ const permissions: HealthKitPermissions = {
       AppleHealthKit.Constants.Permissions.DietaryCarbohydrates,
       AppleHealthKit.Constants.Permissions.DietaryFatTotal,
     ],
-    write: [], // Iduna is read-only
+    write: [], // read-only integration
   },
 };
 
@@ -429,7 +429,7 @@ Health Connect has **no background delivery mechanism.** Your options:
 2. **WorkManager** — Schedule periodic foreground work (Android only, requires Expo config plugin)
 3. **Manual sync button** — User-triggered "Import from Health Connect"
 
-**Recommended for Iduna:** Sync on app launch + manual sync button. This covers 95% of use cases since users open the app daily.
+**Recommended for a typical health/fitness app:** Sync on app launch + manual sync button. This covers 95% of use cases since users open the app daily.
 
 ---
 
@@ -438,7 +438,7 @@ Health Connect has **no background delivery mechanism.** Your options:
 ### Apple (HealthKit)
 - **Info.plist keys required:**
   - `NSHealthShareUsageDescription` — Explain what you read and why
-  - `NSHealthUpdateUsageDescription` — Required even if not writing (can be "Iduna does not write to Apple Health")
+  - `NSHealthUpdateUsageDescription` — Required even if not writing (can be "This app does not write to Apple Health")
 - **App Review scrutiny:** Apple manually reviews HealthKit apps. Expect 2-5 day review (vs 1-2 for non-health apps)
 - **HealthKit entitlement** — Must enable in Xcode / EAS build config
 - **Privacy nutrition label** — Must declare "Health & Fitness" data collection
@@ -453,7 +453,7 @@ Health Connect has **no background delivery mechanism.** Your options:
 
 ## Common Pitfalls
 
-1. **HealthKit silently returns empty results if denied** — Can't tell "no data" from "permission denied." Show a "No data found — make sure Iduna has access in Settings > Health" message.
+1. **HealthKit silently returns empty results if denied** — Can't tell "no data" from "permission denied." Show a "No data found — make sure this app has access in Settings > Health" message.
 2. **Health Connect might not be installed** — Check `await initialize()` and guide user to install it from Play Store.
 3. **Not all apps write meal types** — Many nutrition apps only write total calories without meal type metadata. Default to "Uncategorized."
 4. **Unit conversion bugs** — HealthKit returns energy in kcal by default but CAN return kJ. Always specify units. Health Connect uses its own unit system.

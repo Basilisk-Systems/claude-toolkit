@@ -1,6 +1,6 @@
 ---
 description: Research codebase and write an implementation plan for a ticket
-argument-hint: <ticket-id> (e.g., CAR-11)
+argument-hint: <ticket-id> (e.g., PROJ-11)
 allowed-tools: Read, Bash, Glob, Grep, Agent, AskUserQuestion, Skill, WebSearch, WebFetch
 ---
 
@@ -12,7 +12,7 @@ Research the codebase and produce a detailed implementation plan without writing
 
 ## Step 1: Identify the Ticket
 
-**If `$ARGUMENTS` is provided:** Use it as the ticket ID (e.g., `CAR-11`).
+**If `$ARGUMENTS` is provided:** Use it as the ticket ID (e.g., `PROJ-11`).
 
 **Otherwise:** Ask the user which ticket or task to plan.
 
@@ -23,7 +23,7 @@ Read these files (skip any that don't exist):
 1. `docs/TICKETS.md` — find the ticket spec, acceptance criteria, dependencies
 2. `CLAUDE.md` — project conventions, patterns, structure
 3. `docs/ARCHITECTURE.md` — component details
-4. `docs/careerctl-claude-code-prompt.md` — full spec with models and patterns (if relevant)
+4. Check the repo's `docs/` directory for relevant design docs or specs, if present
 
 Extract from the ticket:
 - **Title** and description

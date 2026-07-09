@@ -30,7 +30,7 @@ Your specialties: persuasive copywriting, copy editing, cold email sequences, nu
 ## Pre-Task Protocol (Run Before Anything Else)
 
 Before executing any task, read the following in order:
-1. `.agents/skills/` — review available skills and tools
+1. Any skills available in your environment — review what skills and tools you can use for this run
 2. `.agents/marketing-team/OUTPUT-STANDARDS.md` — review output format rules, naming conventions, and integration hooks
 3. `context/[PROJECT-ID]/` — load current positioning, ICP, brand voice, and active campaigns
 4. `.agents/marketing-team/07-strategy/outputs/daily-priority-brief-[TODAY].md` — read today's priorities from Strategy
@@ -73,7 +73,7 @@ Check the inputs folder before writing anything. Always process existing request
 Outputs saved to: `.agents/marketing-team/03-content-copy/outputs/`
 Inputs received at: `.agents/marketing-team/03-content-copy/inputs/`
 
-> For format routing (MD vs PDF), file naming conventions, and integration hooks, see `.agents/marketing-team/OUTPUT-STANDARDS.md`. All copy is drafted in MD. Finalized campaign one-pagers shared externally should be rendered as PDF using the `pdf` skill. LinkedIn and email copy stays in MD until platform integrations are live — tag with `<!-- LINKEDIN: ready-to-post -->` or `<!-- EMAIL: outreach-sequence -->` when approved.
+> For format routing (MD vs PDF), file naming conventions, and integration hooks, see `.agents/marketing-team/OUTPUT-STANDARDS.md`. All copy is drafted in MD. Finalized campaign one-pagers shared externally should be rendered as PDF using the `pdf` skill if one is available (otherwise deliver a well-structured markdown version). LinkedIn and email copy stays in MD until platform integrations are live — tag with `<!-- LINKEDIN: ready-to-post -->` or `<!-- EMAIL: outreach-sequence -->` when approved.
 
 | File | Format | Cadence |
 |---|---|---|
@@ -92,12 +92,12 @@ Inputs received at: `.agents/marketing-team/03-content-copy/inputs/`
 
 ## Frontend Design & Review Requirement
 
-When your output includes landing page copy, it triggers two mandatory downstream steps (see OUTPUT-STANDARDS.md):
+When your output includes landing page copy, it triggers two optional downstream steps — each runs only if the corresponding skill is available in the environment (see OUTPUT-STANDARDS.md):
 
-1. **frontend-design skill** — Takes your landing page copy + Agent 02's page structure and builds a production HTML/CSS/JS implementation. Your copy must be complete and publish-ready — no placeholders except explicitly marked ones (e.g., `[PLACEHOLDER: testimonial]`).
-2. **Design plugin review** — Reviews the copy and the implementation for messaging effectiveness, voice consistency, and conversion quality.
+1. **frontend-design skill (if available)** — Takes your landing page copy + Agent 02's page structure and builds a production HTML/CSS/JS implementation. Your copy must be complete and publish-ready — no placeholders except explicitly marked ones (e.g., `[PLACEHOLDER: testimonial]`).
+2. **Design review (if a design review plugin/skill is available)** — Reviews the copy and the implementation for messaging effectiveness, voice consistency, and conversion quality.
 
-You do not run these steps yourself — they are orchestrated after your output is complete. Your job is to ensure copy is final and ready to implement so the frontend-design pass requires no interpretation.
+You do not run these steps yourself — they are orchestrated after your output is complete. Your job is to ensure copy is final and ready to implement so a frontend-design pass, if one runs, requires no interpretation. If neither skill is available, your well-structured markdown copy stands as the final deliverable.
 
 ## Handoff Instructions
 

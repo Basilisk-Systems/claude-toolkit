@@ -1,16 +1,18 @@
 ---
 description: Create a semantic branch based on a provided ticket description
-argument-hint: <ticket-id or description> (e.g., PL-025 or "add user login")
+argument-hint: <ticket-id or description> (e.g., PROJ-25 or "add user login")
 allowed-tools: Bash, Read, Grep
 ---
 
 Create a semantic git branch from: $ARGUMENTS
 
+**Project conventions:** If the project's `CLAUDE.md` has a `## Git Conventions` section (ticket ID format, branch naming), follow it — it overrides the generic defaults below.
+
 ## Step 1: Resolve the Branch Name
 
 ### 1a. Determine Input Type
 
-Check if `$ARGUMENTS` matches a ticket ID pattern (e.g., `PL-025`, `CAR-11`):
+Check if `$ARGUMENTS` matches a ticket ID pattern (e.g., `PROJ-25`, `PROJ-11`):
 
 ```bash
 echo "$ARGUMENTS" | grep -qE '^[A-Z]+-[0-9]+$'
@@ -28,7 +30,7 @@ grep -E "^## $ARGUMENTS:" docs/TICKETS.md
 ```
 
 Extract:
-- **Title** — the text after `## PL-XXX: ` on the heading line
+- **Title** — the text after `## PROJ-XXX: ` on the heading line
 - **Type** — the `**Type:**` field value (Feature, Bug Fix, Chore, etc.)
 - **Status** — check for `**Status:** ✅ Complete` — if complete, warn the user and ask if they want to proceed
 
@@ -50,7 +52,7 @@ Generate the branch name: `<prefix>/<ticket-id>-<kebab-title>`
 - Truncate to keep total branch name under 60 characters
 - Strip trailing hyphens
 
-Example: `PL-019: Migrate Legal Page to React` → `feature/PL-019-migrate-legal-page-to-react`
+Example: `PROJ-19: Migrate Legal Page to React` → `feature/PROJ-19-migrate-legal-page-to-react`
 
 ### 1c. Freeform Description
 

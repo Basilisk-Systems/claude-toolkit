@@ -1,6 +1,6 @@
 ---
 name: aws-cdk-lambda
-description: Lambda function patterns with AWS Lambda Powertools. Use when writing Lambda handlers, configuring functions, or setting up API Gateway integrations.
+description: Lambda function patterns with AWS Lambda Powertools and API Gateway integration via CDK. TRIGGER when writing Lambda handler code, editing aws-cdk-lib/aws-lambda or apigateway constructs, files importing aws_lambda_powertools, or user asks about Lambda config, layers, cold starts, or API Gateway routes. Do NOT trigger for non-Lambda compute (ECS, EC2) or frontend code calling APIs.
 ---
 
 # AWS Lambda Patterns

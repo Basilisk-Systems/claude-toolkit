@@ -18,8 +18,16 @@ if [[ ! -f "$HANDOFF_FILE" ]]; then
     exit 0
 fi
 
-# Get current terminal session identifier (parent PID)
-CURRENT_SESSION="$$-$PPID"
+# Use the Claude Code session_id from stdin JSON as the session marker.
+# ($$-$PPID is new on every hook invocation, which would re-inject the
+# handoff on every single prompt.)
+INPUT=$(cat)
+if command -v jq &> /dev/null; then
+    SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
+else
+    SESSION_ID=$(echo "$INPUT" | grep -oP '"session_id"\s*:\s*"\K[^"]+' | head -1)
+fi
+CURRENT_SESSION="${SESSION_ID:-unknown}"
 
 # Check if marker exists and matches current session
 if [[ -f "$MARKER_FILE" ]]; then

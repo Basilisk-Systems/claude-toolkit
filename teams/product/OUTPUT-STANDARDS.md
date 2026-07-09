@@ -67,10 +67,16 @@ All markdown output files must use the full naming convention:
 |---|---|---|
 | Briefs, strategy docs, daily logs, research | `.md` | Default for all internal docs |
 | PRDs, specs, design docs | `.md` | Markdown always; convert to PDF on request |
-| Investor/partner-facing docs, one-pagers | `.pdf` | Use `pdf` skill to render |
+| Investor/partner-facing docs, one-pagers | `.pdf` if a `pdf` skill is available; otherwise `.md` | Render with the `pdf` skill when available; otherwise deliver well-structured markdown |
 | Roadmaps, OKR trackers, backlog | `.md` | Keep as markdown |
 | Survey instruments, interview guides | `.md` | Tagged for handoff |
 | Launch plans, go-to-market docs | `.md` | Tagged for review |
+
+---
+
+## Data Availability Rule
+
+Task checklists may reference live metrics (OKR progress, survey results, activation or retention data, PMF signals, etc.). If a checklist item requires data that is not present in `context/` or `inputs/`, mark it `SKIPPED — NO DATA` in the log rather than estimating. Never fabricate or extrapolate metric values to complete a checklist item.
 
 ---
 
@@ -98,7 +104,7 @@ Product agents may read marketing team outputs for alignment. Use these paths:
 |---|---|
 | Marketing strategy and priorities | `outputs/[PROJECT-ID]/marketing/07-strategy/` |
 | Competitive intelligence (marketing view) | `outputs/[PROJECT-ID]/marketing/06-sales-gtm/` |
-| SEO and content signals | `outputs/[PROJECT-ID]/marketing/01-seo/` |
+| SEO and content signals | `outputs/[PROJECT-ID]/marketing/01-seo-content/` |
 | Conversion and user behavior signals | `outputs/[PROJECT-ID]/marketing/02-cro/` |
 | Positioning and messaging copy | `outputs/[PROJECT-ID]/marketing/03-content-copy/` |
 

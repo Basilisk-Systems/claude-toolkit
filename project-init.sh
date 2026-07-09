@@ -29,8 +29,9 @@ NC='\033[0m'
 add_gitignore_entry() {
     local gitignore="$1" pattern="$2" comment="$3" flag_override="$4" default="$5"
 
-    # Already present — nothing to do
-    if [[ -f "$gitignore" ]] && grep -q "${pattern}" "$gitignore" 2>/dev/null; then
+    # Already present — nothing to do. Match whole lines only, otherwise
+    # ".claude" would false-match an existing ".claude-local/" entry.
+    if [[ -f "$gitignore" ]] && { grep -qxF "${pattern}/" "$gitignore" || grep -qxF "${pattern}" "$gitignore"; } 2>/dev/null; then
         return 0
     fi
 
@@ -283,13 +284,15 @@ settings_file = sys.argv[5]
 
 settings = {"hooks": {}}
 
+# NOTE: hook "timeout" is in SECONDS, and hook matchers are regexes against
+# the TOOL NAME only — file-path filtering happens inside each hook script.
+
 # UserPromptSubmit — session-handoff (always)
 settings["hooks"]["UserPromptSubmit"] = [{
-    "matcher": "",
     "hooks": [{
         "type": "command",
         "command": ".claude/hooks/session-handoff.sh",
-        "timeout": 5000
+        "timeout": 10
     }]
 }]
 
@@ -299,13 +302,13 @@ if install_block_cli:
     pre_tool_hooks.append({
         "type": "command",
         "command": ".claude/hooks/block-cloud-cli.sh",
-        "timeout": 5000
+        "timeout": 10
     })
 if install_precommit:
     pre_tool_hooks.append({
         "type": "command",
         "command": ".claude/hooks/pre-commit-check.sh",
-        "timeout": 120000
+        "timeout": 120
     })
 if pre_tool_hooks:
     settings["hooks"]["PreToolUse"] = [{
@@ -313,22 +316,14 @@ if pre_tool_hooks:
         "hooks": pre_tool_hooks
     }]
 
-# PostToolUse — test-coverage-check
+# PostToolUse — test-coverage-check (script itself filters for test files)
 if install_coverage:
-    if stack == "js":
-        matcher = (
-            "Write(*.test.ts)|Write(*.test.tsx)|Write(*.test.js)|Write(*.test.jsx)"
-            "|Edit(*.test.ts)|Edit(*.test.tsx)|Edit(*.test.js)|Edit(*.test.jsx)"
-        )
-    else:
-        matcher = "Write(test_*.py)|Write(*_test.py)|Edit(test_*.py)|Edit(*_test.py)"
-
     settings["hooks"]["PostToolUse"] = [{
-        "matcher": matcher,
+        "matcher": "Write|Edit",
         "hooks": [{
             "type": "command",
             "command": ".claude/hooks/test-coverage-check.sh",
-            "timeout": 120000
+            "timeout": 120
         }]
     }]
 

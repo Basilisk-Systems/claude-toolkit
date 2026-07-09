@@ -79,6 +79,11 @@ def parse_transcript(path: str) -> dict:
     # Token accumulators per model
     usage_by_model: dict[str, dict] = {}
 
+    # Multiple transcript lines can share one API response (one line per
+    # content block, each carrying the same usage). Dedupe by message id
+    # (+ requestId) so tokens and turns aren't overcounted.
+    seen_message_keys: set = set()
+
     with open(path) as f:
         for line in f:
             try:
@@ -98,7 +103,7 @@ def parse_transcript(path: str) -> dict:
                 branch = obj["gitBranch"]
             if not version and obj.get("version"):
                 version = obj["version"]
-            if not project and obj.get("sessionId"):
+            if not session_id and obj.get("sessionId"):
                 session_id = obj["sessionId"]
 
             # --- User messages ---
@@ -125,22 +130,31 @@ def parse_transcript(path: str) -> dict:
 
             # --- Assistant messages ---
             if msg_type == "assistant":
-                assistant_turns += 1
                 msg = obj.get("message", {})
-                usage = msg.get("usage", {})
-                model = msg.get("model", "unknown")
-                models.add(model)
 
-                # Accumulate usage per model
-                if model not in usage_by_model:
-                    usage_by_model[model] = {
-                        "input_tokens": 0,
-                        "output_tokens": 0,
-                        "cache_read_input_tokens": 0,
-                        "cache_creation_input_tokens": 0,
-                    }
-                for key in usage_by_model[model]:
-                    usage_by_model[model][key] += usage.get(key, 0)
+                # Dedupe: lines sharing a message id (and requestId) belong to
+                # the same API response — count usage and the turn only once.
+                dedup_key = (msg.get("id"), obj.get("requestId"))
+                is_duplicate = dedup_key != (None, None) and dedup_key in seen_message_keys
+
+                if not is_duplicate:
+                    if dedup_key != (None, None):
+                        seen_message_keys.add(dedup_key)
+                    assistant_turns += 1
+                    usage = msg.get("usage", {})
+                    model = msg.get("model", "unknown")
+                    models.add(model)
+
+                    # Accumulate usage per model
+                    if model not in usage_by_model:
+                        usage_by_model[model] = {
+                            "input_tokens": 0,
+                            "output_tokens": 0,
+                            "cache_read_input_tokens": 0,
+                            "cache_creation_input_tokens": 0,
+                        }
+                    for key in usage_by_model[model]:
+                        usage_by_model[model][key] += usage.get(key, 0)
 
                 # Parse tool uses
                 content = msg.get("content", [])
@@ -355,7 +369,9 @@ def append_to_log(data: dict) -> Path:
 def find_project_transcripts(project_path: str) -> list[str]:
     """Find all transcript files for a project."""
     # Claude Code stores transcripts in ~/.claude/projects/<encoded-path>/
-    encoded = project_path.replace("/", "-").lstrip("-")
+    # Encoding replaces "/", "_", and "." with "-" and KEEPS the leading
+    # dash (e.g. /home/x/a_b.c -> -home-x-a-b-c).
+    encoded = re.sub(r"[/_.]", "-", project_path)
     transcript_dir = CLAUDE_DIR / "projects" / encoded
     if not transcript_dir.exists():
         return []
@@ -410,6 +426,7 @@ def main():
         sys.exit(1)
 
     all_summaries = []
+    log_path = None
     for t in transcripts:
         if not os.path.exists(t):
             print(f"File not found: {t}", file=sys.stderr)
@@ -430,7 +447,7 @@ def main():
             print_summary(data)
             print()
 
-        if args.log:
+        if args.log and log_path:
             print(f"Logged to: {log_path}")
 
         # Print aggregate if multiple sessions

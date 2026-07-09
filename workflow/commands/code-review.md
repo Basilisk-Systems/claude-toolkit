@@ -10,8 +10,10 @@ Perform a comprehensive code review by spawning five parallel analysis agents. E
 
 ## Step 1: Gather Review Context
 
+Set the base branch from the argument. **If no argument was given, use `main`.**
+
 ```bash
-BASE_BRANCH="${ARGUMENTS:-main}"
+BASE_BRANCH="$ARGUMENTS"
 CURRENT_BRANCH=$(git branch --show-current)
 
 # Files changed on this branch

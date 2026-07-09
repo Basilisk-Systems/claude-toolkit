@@ -1,6 +1,6 @@
 ---
 name: react-state
-description: Redux Toolkit and RTK Query patterns for React state management. Use when setting up stores, creating slices, or building API integrations.
+description: Redux Toolkit and RTK Query patterns for React state management. TRIGGER when code imports @reduxjs/toolkit or react-redux, when editing store, slice, or RTK Query api files, or user asks about global state, slices, selectors, or client-side API caching in React. Do NOT trigger for components using only local useState/useContext, or apps on Zustand or other state libraries.
 ---
 
 # React State Management

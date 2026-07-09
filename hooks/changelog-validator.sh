@@ -25,8 +25,9 @@ else
     exit 0  # Can't validate without jq
 fi
 
-# Only check CHANGELOG files
-if [[ ! "$FILE_PATH" =~ CHANGELOG\.md$ ]] && [[ ! "$FILE_PATH" =~ CHANGELOG$ ]]; then
+# Only check CHANGELOG files (settings matcher is plain "Write|Edit", so this
+# hook fires for every write — bail out early for anything else)
+if ! echo "$FILE_PATH" | grep -qi 'CHANGELOG'; then
     exit 0
 fi
 
@@ -48,7 +49,8 @@ WARNINGS=""
 for DATE in $DATES_IN_CONTENT; do
     # Validate format (basic check - YYYY-MM-DD)
     if ! echo "$DATE" | grep -qP '^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$'; then
-        echo "{\"decision\": \"block\", \"reason\": \"Invalid date format: $DATE. Use YYYY-MM-DD format.\"}"
+        jq -n --arg r "Invalid date format: $DATE. Use YYYY-MM-DD format." \
+            '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":$r}}'
         exit 0
     fi
     
@@ -69,10 +71,13 @@ for DATE in $DATES_IN_CONTENT; do
         WARNINGS="${WARNINGS}Year $YEAR is in the future. Current year is $CURRENT_YEAR. "
     fi
     
-    # Check if date is significantly in the past (more than 30 days)
-    if command -v date &> /dev/null; then
-        DAYS_AGO=$(( ($(date +%s) - $(date -d "$DATE" +%s 2>/dev/null || echo 0)) / 86400 ))
-        if [ "$DAYS_AGO" -gt 30 ] 2>/dev/null; then
+    # Check if date is significantly in the past (more than 30 days).
+    # If `date -d` can't parse the date, skip this check instead of
+    # computing garbage from a zero epoch.
+    DATE_EPOCH=$(date -d "$DATE" +%s 2>/dev/null)
+    if [ -n "$DATE_EPOCH" ]; then
+        DAYS_AGO=$(( ($(date +%s) - DATE_EPOCH) / 86400 ))
+        if [ "$DAYS_AGO" -gt 30 ]; then
             WARNINGS="${WARNINGS}Date $DATE is $DAYS_AGO days ago. Did you mean $CURRENT_DATE? "
         fi
     fi
@@ -80,7 +85,8 @@ done
 
 # If there are warnings, ask for confirmation
 if [ -n "$WARNINGS" ]; then
-    echo "{\"decision\": \"ask\", \"reason\": \"⚠️ CHANGELOG date check: ${WARNINGS}Confirm this is intentional, or update to use today's date ($CURRENT_DATE).\"}"
+    jq -n --arg r "⚠️ CHANGELOG date check: ${WARNINGS}Confirm this is intentional, or update to use today's date ($CURRENT_DATE)." \
+        '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":$r}}'
     exit 0
 fi
 

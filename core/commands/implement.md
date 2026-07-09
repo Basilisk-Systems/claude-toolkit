@@ -1,7 +1,7 @@
 ---
 description: Orchestrate automated implementation using sub-agents for each plan phase
 argument-hint: [optional: plan file path or "resume"]
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Task
+allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 ---
 
 # Automated Implementation Orchestrator
@@ -26,7 +26,7 @@ Read the plan file contents.
 ```bash
 git branch --show-current
 ```
-Extract the ticket ID (e.g., `DRNG-95` from branch name). Also capture:
+Extract the ticket ID (e.g., `TICKET-123` from branch name, following the repo's ticket convention). Also capture:
 ```bash
 pwd
 git log --oneline -3
@@ -71,8 +71,8 @@ Create `.claude-local/IMPLEMENT_STATE.md`:
 
 ## Phase Progress
 
-| # | Title | Status | Commit | Agent Turns |
-|---|-------|--------|--------|-------------|
+| # | Title | Status | Commit | Notes |
+|---|-------|--------|--------|-------|
 | 1 | [title] | pending | — | — |
 | 2 | [title] | pending | — | — |
 
@@ -100,7 +100,7 @@ Confirm clean working tree. If dirty, stop and ask user.
 
 ### 5b. Construct Agent Prompt
 
-Build a detailed prompt for the Task agent. **This is the most critical step — the agent works autonomously from this prompt alone.**
+Build a detailed prompt for the Agent tool. **This is the most critical step — the agent works autonomously from this prompt alone.**
 
 Include ALL of the following in the agent prompt:
 
@@ -108,8 +108,8 @@ Include ALL of the following in the agent prompt:
 You are implementing Phase [N] of [total] for ticket [TICKET-ID].
 
 ## Project
-DocRanger — document processing platform.
 Working directory: [absolute path to repo]
+Read the repo's CLAUDE.md and README for project context, identity, and conventions.
 
 ## CRITICAL — Read These First
 1. Read `CLAUDE.md` in the repo root for code patterns and conventions
@@ -138,12 +138,8 @@ Working directory: [absolute path to repo]
 
 1. Read existing files BEFORE modifying them
 2. Follow ALL conventions in CLAUDE.md
-3. After implementation, run tests:
-   - Python: pytest [specific test paths] -q
-   - Frontend: cd [repo]/web && npx vitest run [specific test paths]
-4. Run lint checks:
-   - Python: ruff check [paths] && ruff format --check [paths]
-   - Frontend: cd [repo]/web && npx eslint [paths] --quiet
+3. After implementation, run tests using the target repo's own test commands — discover them from CLAUDE.md, package.json scripts, Makefile, tox/pytest config, or CI config. Scope to the tests relevant to this phase.
+4. Run lint/format checks using the target repo's own lint commands (same sources: CLAUDE.md, package.json scripts, Makefile, pre-commit config)
 5. If tests or lint fail, fix the issues before committing
 6. Stage ONLY the files you created or modified:
    git add [specific file paths]
@@ -157,6 +153,7 @@ Working directory: [absolute path to repo]
    git log --oneline -1
    git diff HEAD~1 --stat
    Report: commit hash, files changed, test pass/fail counts, any issues.
+9. If you cannot fully complete the phase, say so explicitly in your final report: state exactly what was completed, what remains, and why you stopped.
 
 Do NOT:
 - Modify files outside your phase scope
@@ -168,13 +165,9 @@ Do NOT:
 
 ### 5c. Spawn the Agent
 
-Use the **Task** tool:
+Use the **Agent** tool:
 - `subagent_type`: `"general-purpose"`
 - `model`: `"sonnet"`
-- `max_turns` based on phase complexity:
-  - Small (1-3 files, straightforward): **15 turns**
-  - Medium (4-7 files, moderate logic): **20 turns**
-  - Large (8+ files or complex logic): **25 turns**
 
 ### 5d. Verify Agent Results
 
@@ -192,8 +185,8 @@ git diff HEAD~1 --stat
 3. **If agent failed to commit (escalate to Opus):**
    - Run `git status` and `git diff --stat` to assess partial work
    - If work is partially done with passing tests: stage and commit the partial work, note the gap
-   - If tests failed: report to user, offer to spawn a fix-up agent (`model: "opus"`, max_turns: 10) — include the Sonnet agent's error output and failing test names in the prompt so Opus has full context
-   - If agent ran out of turns: report progress, spawn a continuation agent (`model: "opus"`) for remaining work in this phase — include a summary of what was completed and what remains
+   - If tests failed: report to user, offer to spawn a fix-up agent (`model: "opus"`) — include the Sonnet agent's error output and failing test names in the prompt so Opus has full context
+   - If the agent reported incomplete work (its final report says the phase wasn't finished): report progress, spawn a continuation agent (`model: "opus"`) for remaining work in this phase — include a summary of what was completed and what remains
 
 4. **If the agent reported issues:**
    - Minor (warnings, style nits): log in state file, continue to next phase
@@ -216,20 +209,9 @@ Between phases, output a brief status:
 
 After all phases complete:
 
-1. **Run full test suite** for affected areas:
-```bash
-# Python tests (if backend phases existed)
-pytest tests/unit/ -q 2>&1 | tail -5
+1. **Run the full test suite** for affected areas, using the target repo's own test commands (discover them from CLAUDE.md, package.json scripts, Makefile, or CI config).
 
-# Frontend tests (if frontend phases existed)
-cd web && npx vitest run --reporter=verbose 2>&1 | tail -20
-```
-
-2. **Run full lint:**
-```bash
-ruff check infrastructure/ tests/ --quiet
-cd web && npx eslint src/ --quiet
-```
+2. **Run the full lint checks**, again using the repo's own lint commands (CLAUDE.md, package.json scripts, Makefile, pre-commit config).
 
 3. **Review commit chain:**
 ```bash
@@ -281,7 +263,7 @@ Plan file cleaned up: ~/.claude/plans/{name}.md
 
 | Situation | Action |
 |-----------|--------|
-| Agent timeout (max_turns) | Run `/implement resume` — picks up from last incomplete phase |
+| Agent reports incomplete work | Spawn a continuation agent, or run `/implement resume` — picks up from last incomplete phase |
 | Test failures after commit | Spawn fix-up agent targeting the failing tests |
 | User interruption | State preserved in IMPLEMENT_STATE.md — resume anytime |
 | Dirty working tree on resume | Show `git status`, ask user to resolve before continuing |

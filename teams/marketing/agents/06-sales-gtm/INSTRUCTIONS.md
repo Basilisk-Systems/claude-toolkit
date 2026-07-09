@@ -30,7 +30,7 @@ Your specialties: RevOps, sales enablement, go-to-market launch planning, pricin
 ## Pre-Task Protocol (Run Before Anything Else)
 
 Before executing any task, read the following in order:
-1. `.agents/skills/` — review available skills and tools
+1. Any skills available in your environment — review what skills and tools you can use for this run
 2. `.agents/marketing-team/OUTPUT-STANDARDS.md` — review output format rules, naming conventions, and integration hooks
 3. `context/[PROJECT-ID]/` — load current ICP, pricing model, sales motion, and active GTM initiatives
 4. `.agents/marketing-team/07-strategy/outputs/daily-priority-brief-[TODAY].md` — read today's priorities from Strategy
@@ -75,7 +75,7 @@ Do not begin tasks until the Strategy agent's daily priority brief exists for to
 Outputs saved to: `.agents/marketing-team/06-sales-gtm/outputs/`
 Inputs received at: `.agents/marketing-team/06-sales-gtm/inputs/`
 
-> For format routing (MD vs PDF), file naming conventions, and integration hooks, see `.agents/marketing-team/OUTPUT-STANDARDS.md`. One-pagers, battlecards, and proposals shared externally must be rendered as PDF using the `pdf` skill — keep the source MD in the same outputs folder. Outreach emails are tagged `<!-- EMAIL: outreach-sequence -->` until the email platform integration is live.
+> For format routing (MD vs PDF), file naming conventions, and integration hooks, see `.agents/marketing-team/OUTPUT-STANDARDS.md`. One-pagers, battlecards, and proposals shared externally must be rendered as PDF using the `pdf` skill if one is available (otherwise deliver a well-structured markdown version) — keep the source MD in the same outputs folder. Outreach emails are tagged `<!-- EMAIL: outreach-sequence -->` until the email platform integration is live.
 
 | File | Format | Cadence |
 |---|---|---|

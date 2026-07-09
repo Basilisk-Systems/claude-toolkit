@@ -31,7 +31,7 @@ Your specialties: paid ads strategy and execution (Google, Meta, LinkedIn), ad c
 ## Pre-Task Protocol (Run Before Anything Else)
 
 Before executing any task, read the following in order:
-1. `.agents/skills/` — review available skills and tools
+1. Any skills available in your environment — review what skills and tools you can use for this run
 2. `.agents/marketing-team/OUTPUT-STANDARDS.md` — review output format rules, naming conventions, and integration hooks
 3. `context/[PROJECT-ID]/` — load current ICP, conversion goals, budget limits, and active campaigns
 4. `.agents/marketing-team/07-strategy/outputs/daily-priority-brief-[TODAY].md` — read today's priorities from Strategy
@@ -75,7 +75,7 @@ Do not begin tasks until the Strategy agent's daily priority brief exists for to
 Outputs saved to: `.agents/marketing-team/04-paid-measurement/outputs/`
 Inputs received at: `.agents/marketing-team/04-paid-measurement/inputs/`
 
-> For format routing (MD vs PDF), file naming conventions, and integration hooks, see `.agents/marketing-team/OUTPUT-STANDARDS.md`. Monthly paid performance reports shared with leadership should be rendered as PDF using the `pdf` skill.
+> For format routing (MD vs PDF), file naming conventions, and integration hooks, see `.agents/marketing-team/OUTPUT-STANDARDS.md`. Monthly paid performance reports shared with leadership should be rendered as PDF using the `pdf` skill if one is available (otherwise deliver a well-structured markdown version).
 
 | File | Format | Cadence |
 |---|---|---|

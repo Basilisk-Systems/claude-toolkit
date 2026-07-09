@@ -9,13 +9,28 @@ This command prepares for a context clear while ensuring HANDOFF.md will be auto
 
 ## Instructions
 
-1. **Delete the session marker** to trigger handoff reload:
+1. **Verify the session-handoff hook is configured** — the reload only works if the project has the hook installed:
+
+```bash
+grep -q "session-handoff.sh" .claude/settings.json 2>/dev/null && echo "HOOK_CONFIGURED" || echo "HOOK_MISSING"
+```
+
+If `HOOK_MISSING`, stop and tell the user:
+```
+⚠️  The session-handoff hook is not configured in .claude/settings.json,
+    so HANDOFF.md will NOT auto-load after /clear.
+
+    Run the toolkit's project-init.sh in this repo to set it up, then re-run /clear-context.
+```
+Do not proceed to the next steps.
+
+2. **Delete the session marker** to trigger handoff reload:
 
 ```bash
 rm -f .claude-local/.session-marker
 ```
 
-2. **Confirm to the user** that they should now run `/clear`:
+3. **Confirm to the user** that they should now run `/clear`:
 
 Output this message:
 ```

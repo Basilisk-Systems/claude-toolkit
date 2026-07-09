@@ -10,12 +10,8 @@ Generate a merge request title and description for the current branch.
 
 Check if this is a **release PR** (version promotion from `dev` → `main`):
 
-```bash
-MODE="${ARGUMENTS:-feature}"
-```
-
-- If `ARGUMENTS` is `release` → **Release mode** (skip to § Release Mode below)
-- Otherwise → **Feature mode** (standard behavior, `ARGUMENTS` is the base branch)
+- If `$ARGUMENTS` is `release` → **Release mode** (skip to § Release Mode below)
+- Otherwise → **Feature mode** (standard behavior, `$ARGUMENTS` is the base branch; if no argument was given, use `main`)
 
 ---
 
@@ -23,12 +19,14 @@ MODE="${ARGUMENTS:-feature}"
 
 ### 1. Gather Branch Information
 
+Set the base branch from the argument. **If no argument was given, use `main`.**
+
 ```bash
 # Get current branch name
 git branch --show-current
 
-# Get base branch (use argument or default to main)
-BASE_BRANCH="${ARGUMENTS:-main}"
+# Get base branch from the argument (if none was given, use main)
+BASE_BRANCH="$ARGUMENTS"
 
 # Get commit count on this branch
 git rev-list --count $BASE_BRANCH..HEAD
@@ -48,7 +46,7 @@ git diff $BASE_BRANCH --name-only
 
 ### 2. Analyze the Changes
 
-- Identify the ticket ID from branch name (e.g., DRNG-XX)
+- Identify the ticket ID from branch name (e.g., `TICKET-123` — follow the repo's ticket convention)
 - Group commits by type (feat, fix, refactor, etc.)
 - Identify the main themes/areas of change
 - Note any breaking changes or migrations
@@ -77,7 +75,7 @@ If a warning applies, include it in the PR description under `## Release` so the
 
 ### 4. Generate MR Title
 
-Format: `<type>(DRNG-XX): <concise summary>`
+Format: `<type>(TICKET-123): <concise summary>` (placeholder — use the repo's actual ticket format)
 
 Rules:
 - Extract ticket ID from branch name if present
@@ -120,7 +118,7 @@ No version change
 
 ## Related
 
-- Ticket: [DRNG-XX](link if known)
+- Ticket: [TICKET-123](link if known)
 - Related MRs: (if any)
 ```
 
@@ -138,8 +136,8 @@ Push the branch and create the PR automatically:
 # Push the branch
 git push -u origin $(git branch --show-current)
 
-# Create the PR using gh CLI
-BASE_BRANCH="${ARGUMENTS:-main}"
+# Create the PR using gh CLI (base branch from the argument; if none was given, use main)
+BASE_BRANCH="$ARGUMENTS"
 gh pr create --base "$BASE_BRANCH" --title "[title here]" --body "$(cat <<'EOF'
 [description here]
 EOF

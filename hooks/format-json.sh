@@ -24,7 +24,8 @@ if [ -z "$FILE_PATH" ]; then
     exit 0
 fi
 
-# Skip if not a JSON file
+# Skip if not a JSON file (settings matcher is plain "Write|Edit",
+# so this hook fires for every write — bail out early)
 if [[ ! "$FILE_PATH" =~ \.json$ ]]; then
     exit 0
 fi
@@ -42,6 +43,13 @@ if [[ "$FILE_PATH" =~ package-lock\.json$ ]] || \
     exit 0
 fi
 
+# Skip known JSONC files (comments/trailing commas would be mangled or fail)
+if [[ "$FILE_PATH" =~ tsconfig[^/]*\.json$ ]] || \
+   [[ "$FILE_PATH" =~ \.vscode/ ]] || \
+   [[ "$FILE_PATH" =~ devcontainer\.json$ ]]; then
+    exit 0
+fi
+
 # =============================================================================
 # RUN FORMATTER
 # =============================================================================
@@ -52,10 +60,13 @@ if command -v prettier &> /dev/null; then
 elif [ -f "./node_modules/.bin/prettier" ]; then
     ./node_modules/.bin/prettier --write "$FILE_PATH" 2>&1
 elif command -v jq &> /dev/null; then
-    # Use jq to format (creates temp file to avoid issues)
+    # Use jq to format (creates temp file to avoid issues).
+    # cp over the original (instead of mv) preserves the file's owner,
+    # permissions, and inode — mktemp files are 0600.
     TEMP_FILE=$(mktemp)
     if jq '.' "$FILE_PATH" > "$TEMP_FILE" 2>/dev/null; then
-        mv "$TEMP_FILE" "$FILE_PATH"
+        cp "$TEMP_FILE" "$FILE_PATH"
+        rm -f "$TEMP_FILE"
     else
         rm -f "$TEMP_FILE"
         echo "⚠️ JSON formatting failed (invalid JSON?): $FILE_PATH" >&2

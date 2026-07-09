@@ -17,7 +17,7 @@ Use this date for all CHANGELOG entries.
 
 ### Step 2: Mark Ticket Complete (if applicable)
 
-If the argument looks like a ticket ID (e.g., `DRNG-98`, `CAR-12`, or any `PREFIX-NUMBER` pattern):
+If the argument looks like a ticket ID (e.g., `TICKET-98`, `ABC-12`, or any `PREFIX-NUMBER` pattern):
 
 1. Search for a ticket tracking file (e.g., `docs/V1_TICKETS.md`, `docs/TICKETS.md`, or similar):
    ```bash
@@ -204,7 +204,7 @@ Group intelligently with existing entries if they're related to the same ticket/
 ```
 Current version: 0.0.8
 Latest CHANGELOG entry: ## [0.0.8] - 2026-02-26
-Commits since v0.0.8 tag: feat(CAR-9): Add Lambda handler stubs...
+Commits since v0.0.8 tag: feat(PROJ-9): Add Lambda handler stubs...
 
 Analysis: feat commits found → suggest bump to 0.0.9
 User confirms → bump VERSION + pyproject.toml → create new ## [0.0.9] entry
@@ -224,7 +224,7 @@ User confirms → bump → create new ## [1.2.4] entry
 ```
 Current version: 0.0.8
 Latest CHANGELOG entry: ## [0.0.8] - 2026-02-26
-Commits since v0.0.8 tag: test(CAR-9): Add tests, chore: Fix typo
+Commits since v0.0.8 tag: test(PROJ-9): Add tests, chore: Fix typo
 
 Analysis: only test/chore commits → suggest no bump
 User confirms → append to existing ## [0.0.8] entry

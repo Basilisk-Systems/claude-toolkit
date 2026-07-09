@@ -1,6 +1,6 @@
 ---
 name: aws-cdk-dynamodb
-description: DynamoDB patterns including single table design and query patterns. Use when designing tables, writing queries, or setting up GSIs.
+description: DynamoDB patterns - single table design, key and GSI modeling, and query patterns. TRIGGER when code uses aws-cdk-lib/aws-dynamodb Table constructs, DynamoDB SDK calls (query, put_item, GetCommand), or user asks about table design, partition/sort keys, GSIs, or access patterns. Do NOT trigger for relational/SQL databases or non-DynamoDB storage work.
 ---
 
 # DynamoDB Patterns

@@ -11,7 +11,8 @@
 #   - Also provides other useful session context
 #
 # OUTPUT:
-#   - JSON with additionalContext field that gets injected into the session
+#   - Plain text on stdout (exit 0). For SessionStart hooks, raw stdout is
+#     added to Claude's context — no JSON wrapper needed.
 # =============================================================================
 
 # Get actual current date/time from system
@@ -102,12 +103,6 @@ CONTEXT="${CONTEXT}
 
 IMPORTANT: When writing dates in CHANGELOG.md or other documentation, use ${CURRENT_DATE} as today's date."
 
-# Output JSON for Claude Code to inject
-# Using jq if available for proper escaping, otherwise manual
-if command -v jq &> /dev/null; then
-    echo "{\"additionalContext\": $(echo "$CONTEXT" | jq -Rs .)}"
-else
-    # Manual escaping (less reliable but works for simple cases)
-    ESCAPED=$(echo "$CONTEXT" | sed 's/"/\\"/g' | tr '\n' ' ')
-    echo "{\"additionalContext\": \"${ESCAPED}\"}"
-fi
+# SessionStart: plain-text stdout on exit 0 is added to context directly
+printf '%s\n' "$CONTEXT"
+exit 0

@@ -1,6 +1,6 @@
 ---
 name: mobile-push-notifications
-description: Push notification patterns for React Native + Expo apps with AWS Lambda backends. Covers APNs/FCM fundamentals, Expo Push API, permission UX, token management, and server-side delivery.
+description: Push notification patterns for React Native + Expo apps with AWS Lambda backends - APNs/FCM fundamentals, Expo Push API, permission UX, token lifecycle, server-side delivery. TRIGGER when code uses expo-notifications or Expo push tokens, or user asks about push notifications, APNs, FCM, or notification permissions. Do NOT trigger for in-app messaging, email delivery, or web push.
 ---
 
 # Mobile Push Notifications
@@ -178,7 +178,7 @@ export default function RootLayout() {
 
 ### Where to Store Tokens (DynamoDB)
 
-**Option A: Attribute on PROFILE item (recommended for Iduna MVP)**
+**Option A: Attribute on PROFILE item (recommended for an MVP)**
 ```
 PK: USER#clerk_abc123
 SK: PROFILE

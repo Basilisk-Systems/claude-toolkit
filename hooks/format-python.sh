@@ -30,7 +30,8 @@ if [ -z "$FILE_PATH" ]; then
     exit 0
 fi
 
-# Skip if not a Python file (double-check)
+# Skip if not a Python file (settings matcher is plain "Write|Edit",
+# so this hook fires for every write — bail out early)
 if [[ ! "$FILE_PATH" =~ \.py$ ]]; then
     exit 0
 fi
@@ -52,10 +53,12 @@ if [ -f ".pre-commit-config.yaml" ] && command -v pre-commit &> /dev/null; then
     EXIT_CODE=$?
 
     if [ $EXIT_CODE -ne 0 ]; then
-        # Report failures so Claude can fix them
-        echo "Pre-commit checks failed for: $FILE_PATH"
-        echo "$OUTPUT"
-        exit 1
+        # Report failures so Claude can fix them.
+        # PostToolUse: stdout on exit 0 is invisible to Claude — feedback
+        # must go to stderr with exit 2.
+        echo "Pre-commit checks failed for: $FILE_PATH" >&2
+        echo "$OUTPUT" >&2
+        exit 2
     fi
 else
     # Fallback to just black if no pre-commit config

@@ -1,6 +1,6 @@
 ---
 name: react-native-expo
-description: React Native + Expo patterns for managed workflow apps. Use when building mobile UI, navigation, performance optimization, or debugging RN apps.
+description: React Native + Expo managed workflow patterns - mobile UI, Expo Router navigation, list performance, app config, and debugging. TRIGGER when code imports expo-* or react-native packages, when editing app.json, app.config.ts, or eas.json, or user asks about React Native or Expo development. Do NOT trigger for React web apps (use react-core) or native Swift/Kotlin projects.
 ---
 
 # React Native + Expo Patterns
@@ -220,7 +220,7 @@ import { FlashList } from '@shopify/flash-list';
 **FlashList vs FlatList:**
 - FlashList (by Shopify): recycles cells like UITableView/RecyclerView. Use this.
 - FlatList: built-in but creates/destroys cells. Fine for <50 items.
-- For Iduna's meal history (~6 items/day, paginated): FlashList for the main list, FlatList for short lists.
+- For a paginated history list (a handful of items/day): FlashList for the main list, FlatList for short lists.
 
 ### Memoization — Different from Web
 ```typescript
@@ -268,7 +268,7 @@ import { Image } from 'expo-image';
 
 ## State Management
 
-### Zustand (Recommended for Iduna)
+### Zustand (Recommended for most Expo apps)
 ```typescript
 // Lightweight, no boilerplate, works perfectly with RN
 import { create } from 'zustand';
@@ -443,22 +443,22 @@ import { ExpoConfig, ConfigContext } from 'expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'Iduna',
-  slug: 'iduna',
+  name: 'YourApp',
+  slug: 'yourapp',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
   splash: { image: './assets/splash.png', resizeMode: 'contain' },
   ios: {
-    bundleIdentifier: 'com.iduna.app',
+    bundleIdentifier: 'com.example.yourapp',
     supportsTablet: false,
     infoPlist: {
-      NSHealthShareUsageDescription: 'Iduna reads your health data to detect drift from your baseline.',
-      NSHealthUpdateUsageDescription: 'Iduna does not write to Apple Health.',
+      NSHealthShareUsageDescription: 'YourApp reads your health data to detect drift from your baseline.',
+      NSHealthUpdateUsageDescription: 'YourApp does not write to Apple Health.',
     },
   },
   android: {
-    package: 'com.iduna.app',
+    package: 'com.example.yourapp',
     adaptiveIcon: { foregroundImage: './assets/adaptive-icon.png' },
   },
   plugins: [

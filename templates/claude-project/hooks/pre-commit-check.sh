@@ -12,6 +12,9 @@
 #   - Secret detection (detect-secrets, etc.)
 #   - Type checking (mypy, tsc, etc.)
 #
+# NOTE: For a PreToolUse decision to apply, stdout must be ONLY the JSON
+# decision object — no banners or progress output.
+#
 # Requires: pre-commit (https://pre-commit.com) — skips gracefully if not installed.
 # =============================================================================
 
@@ -34,37 +37,29 @@ if echo "$COMMAND" | grep -qE '\-\-amend'; then
     exit 0
 fi
 
-# Run pre-commit on staged files
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "RUNNING PRE-COMMIT HOOKS"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
 # Check if pre-commit is available
 if ! command -v pre-commit &> /dev/null; then
-    echo "pre-commit not found, skipping checks"
     exit 0
 fi
 
-# Run pre-commit on staged files only
+# Run pre-commit on staged files
 PRE_COMMIT_OUTPUT=$(pre-commit run 2>&1)
 PRE_COMMIT_EXIT=$?
 
 if [ $PRE_COMMIT_EXIT -ne 0 ]; then
-    echo "$PRE_COMMIT_OUTPUT"
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "PRE-COMMIT HOOKS FAILED"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    echo "Fix the issues above before committing."
-    echo ""
-    echo "{\"decision\": \"block\", \"reason\": \"Pre-commit hooks failed. Fix issues before committing.\"}"
-    exit 0
+    REASON="Pre-commit hooks failed. Fix the issues before committing.
+
+$(echo "$PRE_COMMIT_OUTPUT" | tail -c 4000)"
+
+    if command -v jq &> /dev/null; then
+        jq -n --arg r "$REASON" '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":$r}}'
+        exit 0
+    else
+        # No jq: use the exit-2 deny path (reason on stderr)
+        echo "$REASON" >&2
+        exit 2
+    fi
 fi
 
-echo "All pre-commit hooks passed"
-echo ""
-
+# All pre-commit hooks passed — allow silently
 exit 0

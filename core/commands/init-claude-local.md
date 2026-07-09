@@ -192,6 +192,8 @@ Do these in parallel where possible:
 
 4. **Generate `.claude/settings.json`** with ONLY the `hooks` key. Build the structure based on selected hooks:
 
+**Note:** Hook `timeout` values are in **seconds**, not milliseconds. Use 10 for cheap hooks (session-handoff, block-cloud-cli), 120 for test runs (pre-commit-check, test-coverage-check).
+
 ```json
 {
   "hooks": {
@@ -202,7 +204,7 @@ Do these in parallel where possible:
           {
             "type": "command",
             "command": ".claude/hooks/session-handoff.sh",
-            "timeout": 5000
+            "timeout": 10
           }
         ]
       }
@@ -211,16 +213,16 @@ Do these in parallel where possible:
       {
         "matcher": "Bash",
         "hooks": [
-          // Include block-cloud-cli.sh if selected (timeout: 5000)
-          // Include pre-commit-check.sh if selected (timeout: 120000)
+          // Include block-cloud-cli.sh if selected (timeout: 10)
+          // Include pre-commit-check.sh if selected (timeout: 120)
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "<varies by stack - see below>",
+        "matcher": "Write|Edit",
         "hooks": [
-          // Include test-coverage-check.sh if selected (timeout: 120000)
+          // Include test-coverage-check.sh if selected (timeout: 120)
         ]
       }
     ]
@@ -228,17 +230,48 @@ Do these in parallel where possible:
 }
 ```
 
-**Matcher for test-coverage-check.sh:**
-- JS stack: `Write(*.test.ts)|Write(*.test.tsx)|Write(*.test.js)|Write(*.test.jsx)|Edit(*.test.ts)|Edit(*.test.tsx)|Edit(*.test.js)|Edit(*.test.jsx)`
-- Python stack: `Write(test_*.py)|Write(*_test.py)|Edit(test_*.py)|Edit(*_test.py)`
+**Matcher for test-coverage-check.sh:** matchers can only match tool names (regex over tool names), not file paths — use `"Write|Edit"`. The hook script itself filters by file path (e.g., only acts on `*.test.ts` / `test_*.py` files per the configured stack) and exits silently for non-test files.
 
 **Merge rules:** If both block-cloud-cli and pre-commit-check are selected, they share the same `PreToolUse` → `Bash` matcher entry. Omit any top-level hook event keys that have no entries (e.g., don't include `PostToolUse` if test-coverage wasn't selected).
 
 ### Step 9: Generate starter CLAUDE.md
 
-Check if `CLAUDE.md` exists at the project root. If it already exists, skip this step silently.
+Check if `CLAUDE.md` exists at the project root. If it already exists, skip this step (including 9a/9b) silently.
 
-If it does **not** exist, generate a starter `CLAUDE.md` using the Write tool with the following structure:
+If it does **not** exist, first capture the project's naming conventions (9a/9b), then generate the file (9c).
+
+#### Step 9a: Detect naming conventions from git history
+
+Run these in one Bash call to gather evidence:
+
+```bash
+git log --oneline -50 2>/dev/null | head -50
+git branch -a --format='%(refname:short)' 2>/dev/null | head -20
+```
+
+From the output, detect:
+- **Ticket prefix**: recurring IDs matching `[A-Z][A-Z0-9]+-[0-9]+` in commit subjects or branch names (e.g., `PROJ-123`). Take the most frequent prefix.
+- **Commit format**: conventional commits (`feat:`, `fix(scope):`) vs. freeform, and whether ticket IDs appear in the subject or scope.
+- **Branch format**: patterns like `feature/PROJ-123-description`, `feat/description`, `username/description`.
+
+#### Step 9b: Confirm conventions with the user
+
+Use `AskUserQuestion` (two questions in one call). Build options from what was detected — put the detected value first with "(Recommended)":
+
+- Question 1: "What ticket ID convention does this project use?" / Header: "Tickets" / Options:
+  1. Detected prefix if found, e.g. **PROJ-###** (Recommended) — "Detected in git history"
+  2. **No ticket system** — "Commits and branches don't reference ticket IDs"
+  3. If nothing detected, offer a generic example like **PROJ-###** — "Jira-style IDs" — instead of a detected option
+- Question 2: "What branch naming format?" / Header: "Branches" / Options:
+  1. Detected pattern if found, e.g. **feature/PROJ-123-desc** (Recommended) — "Detected from existing branches"
+  2. **feature/short-description** — "Type prefix, no ticket ID"
+  3. **No convention** — "Freeform branch names"
+
+The user can always pick "Other" to type the actual convention (e.g., a new project adopting a prefix that isn't in history yet).
+
+#### Step 9c: Write the file
+
+Generate a starter `CLAUDE.md` using the Write tool with the following structure:
 
 **Hard Rules section** — include only rules for hooks that were installed:
 - Block Cloud CLI → rule about not running the blocked CLIs directly, referencing the hook file and listing the specific blocked commands
@@ -247,13 +280,24 @@ If it does **not** exist, generate a starter `CLAUDE.md` using the Write tool wi
 
 Number the rules sequentially (1, 2, 3...). If no configurable hooks were selected, omit the Hard Rules section entirely.
 
+**Git Conventions section** — pre-fill from the answers in Step 9b (no TODO marker):
+
+```markdown
+## Git Conventions
+
+- **Ticket IDs**: PROJ-### (e.g., PROJ-123)   <!-- or "None — no ticket system" -->
+- **Branches**: feature/PROJ-123-short-description
+- **Commits**: feat(scope): description       <!-- detected commit format -->
+```
+
+Adjust to the actual confirmed values. These conventions are read by `/branch`, `/blueprint`, `/complete`, and commit hooks — this is where per-project naming lives; toolkit commands and skills stay generic.
+
 **Scaffolding sections** — always include these with `<!-- TODO: ... -->` markers:
 - `## Project Overview` — "Describe your project — what it does, who it's for, key concepts"
 - `## Tech Stack` — "List your languages, frameworks, and key dependencies"
 - `## Project Structure` — "Outline directory layout and where to find things"
 - `## Code Style` — "Linters, formatters, naming conventions, patterns to follow"
 - `## Testing` — "How to run tests, coverage requirements, testing patterns"
-- `## Git Conventions` — "Branch naming, commit message format, PR process"
 - `## Common Tasks` — "Frequent development workflows (add endpoint, run migrations, etc.)"
 
 Do **not** add language-specific content — the user fills in the TODO sections themselves.

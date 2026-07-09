@@ -1,6 +1,6 @@
 ---
 name: react-core
-description: React core patterns with TypeScript, Vite, React Router, TailwindCSS, and ShadCN. Use when creating components, setting up routing, or styling.
+description: React web app patterns with TypeScript, Vite, React Router, TailwindCSS, and ShadCN. TRIGGER when editing .tsx/.jsx files in a Vite React web project (vite.config.*, react-router imports, tailwind.config.*, components.json), or user asks about React components, hooks, routing, or styling for the web. Do NOT trigger for React Native/Expo apps (use react-native-expo) or Vue projects.
 ---
 
 # React Core Patterns

@@ -1,6 +1,6 @@
 ---
 name: mobile-security
-description: Mobile application security for React Native + Expo health apps. Covers threat model, secure storage, auth tokens, data encryption, privacy compliance, and health data protection.
+description: Mobile application security for React Native + Expo apps handling health data - secure storage, auth token handling, encryption at rest, certificate pinning tradeoffs, ATT, privacy labels, GDPR. TRIGGER when mobile code touches tokens, keys, or PII, when using expo-secure-store or AsyncStorage for sensitive data, or user asks about mobile security or health data privacy. Do NOT trigger for backend/server security (use security skill).
 ---
 
 # Mobile Application Security
@@ -138,7 +138,7 @@ expo-sqlite is **NOT encrypted by default.** The database file is plain SQLite o
 
 **Android:** No automatic file-level encryption on all devices. Newer devices (Android 10+) have file-based encryption, but it varies.
 
-**Should Iduna encrypt the database?**
+**Should a typical health/fitness app encrypt the database?**
 
 For MVP: **No.** Here's the risk assessment:
 - The data (meal calories, exercise duration, weight) is not high-sensitivity like banking or medical records
@@ -173,7 +173,7 @@ For post-MVP: Consider SQLCipher if:
 
 Certificate pinning is when your app only trusts specific certificates, not the device's CA store.
 
-**Risks outweigh benefits for Iduna:**
+**Risks outweigh benefits for most consumer health apps:**
 - If you rotate your cert (or your CDN rotates it), pinned apps break
 - Users with expired apps can't connect at all — no graceful degradation
 - OTA update can fix JS code but NOT native networking config
@@ -181,7 +181,7 @@ Certificate pinning is when your app only trusts specific certificates, not the 
 
 **When pinning makes sense:** Banking apps, apps handling financial transactions, apps required by compliance to pin.
 
-**Iduna recommendation:** Don't pin. CloudFront + WAF + TLS 1.2 is sufficient. Your API Gateway already validates the Clerk JWT server-side.
+**Recommendation:** Don't pin. CloudFront + WAF + TLS 1.2 is sufficient when your API Gateway already validates the auth JWT server-side.
 
 ### No Secrets in the Bundle
 ```typescript
@@ -203,7 +203,7 @@ const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_KEY;
 
 ### iOS App Tracking Transparency (ATT)
 - Required since iOS 14.5 if you track users across apps/websites
-- **Iduna does NOT need ATT** if:
+- **A typical health/fitness app does NOT need ATT** if:
   - No advertising SDKs (Facebook, Google Ads)
   - No cross-app tracking
   - Analytics are first-party only (Expo analytics, your own Sentry)
@@ -211,7 +211,7 @@ const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_KEY;
 
 ### App Privacy Labels (iOS)
 
-Required in App Store Connect. For Iduna:
+Required in App Store Connect. Example for a health/fitness app:
 
 | Data Type | Collected | Linked to Identity | Used for Tracking |
 |-----------|-----------|-------------------|-------------------|
@@ -237,7 +237,7 @@ Similar to Apple's privacy labels. Declare:
 function GdprConsentScreen() {
   return (
     <View>
-      <Text>Iduna collects health and nutrition data to detect drift from your baseline.</Text>
+      <Text>This app collects health and nutrition data to detect drift from your baseline.</Text>
       <Text>Your data is stored securely and never shared with third parties.</Text>
       <Pressable onPress={acceptAndContinue}>
         <Text>I Agree</Text>
@@ -329,7 +329,7 @@ if (semverLt(currentVersion, minVersion)) {
 
 ---
 
-## Security Checklist for Iduna
+## Security Checklist for a Health/Fitness App
 
 ### MVP (Must Have)
 - [ ] Clerk tokens in expo-secure-store (not AsyncStorage)

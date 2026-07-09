@@ -45,6 +45,8 @@ STEP 4 — Sequential (depends on Step 3)
 
 **Daily run complete when:** All 5 agents have a daily log file for today in their respective `/outputs/` folders.
 
+**Data availability:** If a checklist item requires data that is not present in `context/` or `inputs/`, mark it `SKIPPED — NO DATA` in the log rather than estimating (see OUTPUT-STANDARDS.md, "Data Availability Rule"). Skipped-for-data items do not block DONE conditions.
+
 ---
 
 ## Weekly Trigger Sequence
@@ -173,7 +175,7 @@ Product agents may read marketing team outputs. If you're running a marketing te
 ```
 outputs/[PROJECT-ID]/marketing/07-strategy/     ← Marketing strategy and priorities
 outputs/[PROJECT-ID]/marketing/06-sales-gtm/    ← Competitive intelligence (sales view)
-outputs/[PROJECT-ID]/marketing/01-seo/          ← SEO and content signals
+outputs/[PROJECT-ID]/marketing/01-seo-content/  ← SEO and content signals
 outputs/[PROJECT-ID]/marketing/02-cro/          ← Conversion and user behavior data
 outputs/[PROJECT-ID]/marketing/03-content-copy/ ← Messaging and copy
 ```

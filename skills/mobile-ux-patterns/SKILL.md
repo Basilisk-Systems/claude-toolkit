@@ -1,6 +1,6 @@
 ---
 name: mobile-ux-patterns
-description: Mobile UX patterns and platform conventions for health/fitness React Native apps. Covers navigation, touch interaction, offline UX, data visualization, accessibility, and health app specific patterns.
+description: Mobile UX patterns and platform conventions for health/fitness React Native apps - navigation architecture, touch interaction, offline UX, charts, accessibility, onboarding. TRIGGER when designing mobile screens or flows, or user asks about mobile UX, iOS HIG vs Material conventions, tab/navigation structure, or health-app UI patterns. SKIP for web UX, backend work, or implementing an already-settled design.
 ---
 
 # Mobile UX Patterns
@@ -9,7 +9,7 @@ description: Mobile UX patterns and platform conventions for health/fitness Reac
 
 ### iOS vs Android — Where It Matters
 
-| Pattern | iOS (HIG) | Android (Material 3) | Recommendation for Iduna |
+| Pattern | iOS (HIG) | Android (Material 3) | Recommendation |
 |---------|-----------|---------------------|--------------------------|
 | Back navigation | Swipe from left edge, no back button | System back button/gesture | Expo Router handles both automatically |
 | Bottom tabs | Standard (3-5 tabs) | Standard (3-5 tabs) | Same on both — 4 tabs: Dashboard, Log, History, Settings |
@@ -22,11 +22,11 @@ description: Mobile UX patterns and platform conventions for health/fitness Reac
 
 ### One Design or Two?
 
-For Iduna (solo dev, B2C): **One design that respects platform conventions.** Don't build two separate UIs. Use components that render natively on each platform (date pickers, segmented controls, switches) but keep your custom UI (cards, charts, buttons) consistent across platforms.
+For a small-team B2C app: **One design that respects platform conventions.** Don't build two separate UIs. Use components that render natively on each platform (date pickers, segmented controls, switches) but keep your custom UI (cards, charts, buttons) consistent across platforms.
 
 ---
 
-## Navigation Architecture for Iduna
+## Navigation Architecture for a Typical Health/Fitness App
 
 ```
 Root
@@ -384,7 +384,7 @@ function DriftIndicator({ percentage, direction }: DriftProps) {
 2. **react-native-chart-kit** — Simple, good defaults, limited customization
 3. **React Native Skia** (via `@shopify/react-native-skia`) — GPU-accelerated, maximum performance, steeper learning curve
 
-**Recommendation for Iduna:** Victory Native for drift charts. Good balance of flexibility and simplicity.
+**Recommendation:** Victory Native for trend/drift charts. Good balance of flexibility and simplicity.
 
 ### Small-Screen Chart Principles
 - **Less data, bigger elements** — Max 7 data points on screen at once (one week)
@@ -421,7 +421,7 @@ function DriftIndicator({ percentage, direction }: DriftProps) {
 ### Progressive Disclosure — Don't Ask Everything Upfront
 
 ```
-Step 1: Welcome + Value prop (why Iduna)
+Step 1: Welcome + Value prop (why this app)
 Step 2: Create account (Clerk sign-up)
 Step 3: Set baseline (wizard)
   - "What's your typical daily calorie intake?" (slider or number input)
@@ -542,7 +542,7 @@ Step 6: Dashboard (with sample data or first-time guidance)
 
 2. **Information overload on dashboard** — Showing 12 metrics at once is paralyzing. Show 3: calories, protein, exercise. Everything else is in History.
 
-3. **Daily focus instead of trend focus** — "You ate 2,100 cal today" is less useful than "Your weekly average is trending up from baseline." Iduna's value prop IS trends, not daily counts.
+3. **Daily focus instead of trend focus** — "You ate 2,100 cal today" is less useful than "Your weekly average is trending up from baseline." For a trend-tracking app, the value prop IS trends, not daily counts.
 
 4. **No positive reinforcement** — Only alerting on bad drift is demoralizing. Show "3 weeks on track" streaks, "Your exercise consistency improved" messages.
 

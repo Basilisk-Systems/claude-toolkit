@@ -1,6 +1,6 @@
 ---
 name: devops-cicd
-description: DevOps/DevSecOps skill for CI/CD pipeline validation. Use when creating or modifying GitHub Actions workflows, deployment scripts, or any CI/CD configuration. Automatically validates alignment with codebase.
+description: DevOps/DevSecOps patterns for CI/CD pipeline creation and validation against the actual codebase. TRIGGER when creating or editing .github/workflows/*.yml, GitLab CI config, deployment or release scripts, or user asks about pipelines, CI failures, build automation, or deploy workflows. Do NOT trigger for local-only build tooling or application code changes that do not touch CI/CD configuration.
 ---
 
 # DevOps CI/CD Validation Skill
@@ -51,10 +51,10 @@ grep -E "env_name|try_get_context" app.py
 **Common environments:**
 | Context Value | Stack Prefix | Notes |
 |--------------|--------------|-------|
-| `dev` | `DocRanger-dev-` | Local development |
-| `dev-{name}` | `DocRanger-dev-{name}-` | Personal dev stacks |
-| `staging` | `DocRanger-staging-` | Shared staging |
-| `prod` | `DocRanger-prod-` | Production |
+| `dev` | `MyApp-dev-` | Local development |
+| `dev-{name}` | `MyApp-dev-{name}-` | Personal dev stacks |
+| `staging` | `MyApp-staging-` | Shared staging |
+| `prod` | `MyApp-prod-` | Production |
 
 **Validate:**
 - [ ] `ENVIRONMENT` variable matches CDK context values exactly
@@ -109,9 +109,9 @@ grep -E "URL|BASE" web/.env*
 **Common patterns to verify:**
 | Environment | Frontend URL | API URL |
 |-------------|--------------|---------|
-| dev | `dev.docranger.io` | Stack output |
-| staging | `staging.docranger.io` | Stack output |
-| prod | `www.docranger.io` | `api.docranger.io` |
+| dev | `dev.example.com` | Stack output |
+| staging | `staging.example.com` | Stack output |
+| prod | `www.example.com` | `api.example.com` |
 
 ---
 
@@ -148,10 +148,10 @@ cdk synth --all -c env=prod 2>&1 | head -20
 ### 1. URL Mismatches
 ```yaml
 # WRONG - missing www for production
-VITE_BASE_URL: https://docranger.io
+VITE_BASE_URL: https://example.com
 
 # CORRECT
-VITE_BASE_URL: https://www.docranger.io
+VITE_BASE_URL: https://www.example.com
 ```
 
 ### 2. Environment Name Mismatch
@@ -175,19 +175,19 @@ VITE_AUTH_BYPASS: "false"
 ### 4. Hardcoded Stack Names
 ```yaml
 # WRONG - hardcoded
---stack-name DocRanger-prod-Api
+--stack-name MyApp-prod-Api
 
 # CORRECT - use environment variable
---stack-name DocRanger-${{ env.ENVIRONMENT }}-Api
+--stack-name MyApp-${{ env.ENVIRONMENT }}-Api
 ```
 
 ### 5. Missing CDK Context
 ```yaml
 # WRONG - missing -c env flag
-cdk deploy DocRanger-prod-Api
+cdk deploy MyApp-prod-Api
 
 # CORRECT
-cdk deploy DocRanger-${{ env.ENVIRONMENT }}-Api -c env=${{ env.ENVIRONMENT }}
+cdk deploy MyApp-${{ env.ENVIRONMENT }}-Api -c env=${{ env.ENVIRONMENT }}
 ```
 
 ---
@@ -214,7 +214,7 @@ jobs:
   deploy:
     environment:
       name: production
-      url: https://www.docranger.io
+      url: https://www.example.com
 ```
 
 ### GitHub Environment Limitations (Team Plan)

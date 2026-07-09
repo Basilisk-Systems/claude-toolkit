@@ -1,6 +1,6 @@
 ---
 name: security
-description: Security best practices following OWASP/NIST guidelines. Use when working with secrets, authentication, user input, SQL, APIs, or any security-sensitive code.
+description: Security best practices following OWASP/NIST guidelines - secrets management, authN/authZ, input validation, SQL injection prevention, PII handling, API security. TRIGGER when code touches secrets or credentials, auth flows, SQL queries, user input parsing, PII, or file uploads, or user asks how to implement something securely. Do NOT trigger for mobile-client hardening (use mobile-security) or full audits (use security-engineer).
 allowed-tools: Read, Glob, Grep
 ---
 
@@ -54,7 +54,7 @@ def get_secret(secret_name: str) -> dict:
     return json.loads(response["SecretString"])
 
 # Usage
-secrets = get_secret("docranger/prod/api-keys")
+secrets = get_secret("myapp/prod/api-keys")
 api_key = secrets["anthropic_api_key"]
 ```
 
@@ -359,8 +359,8 @@ def rate_limit(max_requests: int, window_seconds: int):
 ```python
 # ✅ Restrictive CORS
 ALLOWED_ORIGINS = [
-    "https://docranger.io",
-    "https://staging.docranger.io",
+    "https://example.com",
+    "https://staging.example.com",
 ]
 
 def get_cors_headers(origin: str) -> dict:

@@ -17,13 +17,15 @@ Check if the user provided arguments:
 ### Step 2: Run the summary script
 
 ```bash
-python3 ~/basilisk_systems/claude-toolkit/bin/session-summary.py --today
+python3 ~/.claude/bin/session-summary.py --today
 ```
 
 Or for a specific transcript:
 ```bash
-python3 ~/basilisk_systems/claude-toolkit/bin/session-summary.py <path> --log
+python3 ~/.claude/bin/session-summary.py <path> --log
 ```
+
+If `~/.claude/bin/session-summary.py` doesn't exist, the toolkit isn't installed (or the symlink is missing) — tell the user to run the toolkit's `install.sh`, which symlinks it there.
 
 ### Step 3: Present results
 

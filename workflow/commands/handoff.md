@@ -1,6 +1,6 @@
 ---
 description: Generate a comprehensive session handoff summary for context continuity
-allowed-tools: Read, Write, Glob, Grep
+allowed-tools: Read, Write, Glob, Grep, Bash
 ---
 
 Generate a detailed handoff summary to preserve session context. This enables seamless continuation in a new session.
@@ -13,7 +13,7 @@ Generate a detailed handoff summary to preserve session context. This enables se
    - Problems encountered and how they were resolved
    - Any workarounds or temporary solutions applied
 
-2. **Create a structured summary** using this format:
+2. **Create a structured summary** using this format (get `[DATE]` and `[TIMESTAMP]` from the `date` command — never assume):
 
 ```markdown
 # Session Handoff - [DATE]

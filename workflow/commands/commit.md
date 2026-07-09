@@ -28,8 +28,8 @@ git log --oneline -5
 
 #### 2a. Check if VERSION changed
 ```bash
-# Check if VERSION is in the diff
-git diff --name-only HEAD~1 2>/dev/null | grep -E "^VERSION$" || git diff --cached --name-only | grep -E "^VERSION$" || echo "VERSION_NOT_CHANGED"
+# Check if VERSION is in the working tree or staged changes
+git diff --name-only | grep -E "^VERSION$" || git diff --cached --name-only | grep -E "^VERSION$" || echo "VERSION_NOT_CHANGED"
 ```
 
 #### 2b. If VERSION changed, verify CHANGELOG was updated
@@ -81,8 +81,10 @@ This will update CHANGELOG.md and README.md as needed.
 
 **CRITICAL: Run pre-commit hooks to catch linting/formatting issues before drafting the commit message.**
 
+Stage ONLY the files relevant to this change (never `git add -A` or `git add .` — review `git status` and list the paths explicitly):
+
 ```bash
-git add -A && pre-commit run
+git add <path/to/file1> <path/to/file2> && pre-commit run
 ```
 
 If pre-commit fails:
@@ -98,10 +100,12 @@ If pre-commit fails:
 Follow the project's commit conventions:
 
 ```
-<type>(DRNG-XX): <description>
+<type>(TICKET-123): <description>
 
 [optional body]
 ```
+
+`TICKET-123` is a placeholder — use the repo's actual ticket convention (check recent commit messages and branch names for the format).
 
 **IMPORTANT: Do NOT include Co-Authored-By or author attribution lines.**
 
@@ -131,10 +135,10 @@ Pre-commit: ✓ Passed
 
 #### 7b. Stage and commit the changes
 
-Run the commit:
+Run the commit, staging only the files relevant to this change (any files not already staged in Step 5 — never `git add -A`):
 
 ```bash
-git add -A && git commit -m "$(cat <<'EOF'
+git add <path/to/file1> <path/to/file2> && git commit -m "$(cat <<'EOF'
 [commit message here]
 EOF
 )"
@@ -185,7 +189,7 @@ ls .claude-local/STANDUP.md 2>/dev/null
 
 If found, add a line to the "## Completed" section:
 ```markdown
-- [x] <type>(DRNG-XX): <short description>
+- [x] <type>(TICKET-123): <short description>
 ```
 
 Group intelligently with existing entries if they're related to the same ticket/feature.

@@ -1,4 +1,5 @@
 
+<!-- claude-toolkit:skills -->
 ## Skills
 
 **AWS CDK:** `aws-cdk-core`, `aws-cdk-patterns`, `aws-cdk-lambda`, `aws-cdk-dynamodb`

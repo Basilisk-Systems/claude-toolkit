@@ -1,6 +1,6 @@
 ---
 name: aws-cdk-core
-description: AWS CDK v2 core patterns - app structure, configuration, stacks, and deployment. Use when setting up CDK projects, creating stacks, or deploying infrastructure.
+description: AWS CDK v2 core patterns - app structure, environment configuration, stacks, and deployment workflow. TRIGGER when editing CDK app code (cdk.json, bin/ or lib/ stacks, files importing aws-cdk-lib or constructs), or user asks about CDK setup, stacks, synth, or cdk deploy. Do NOT trigger for general AWS SDK/boto3 code, raw CloudFormation templates, or Terraform.
 ---
 
 # AWS CDK Core Patterns

@@ -43,21 +43,32 @@ STEP 4 — Parallel (no dependencies between them)
     Reads: CAC data from 04 outputs, ICP data from 06 outputs
     DONE when: both have saved their daily-*-log-[TODAY].md to their outputs/
 
-STEP 5 — Frontend Design Pass (landing page outputs only)
-└── frontend-design skill
+STEP 5 — Frontend Design Pass (OPTIONAL — landing page outputs only)
+└── frontend-design skill, if available in the environment
     Trigger: Any run where Agent 02 or Agent 03 produces a landing page asset
     Input: Agent 03 copy + Agent 02 page structure/CRO spec
-    Task: Build a production-grade HTML/CSS/JS implementation from the copy and structure spec
-    DONE when: implementation file saved alongside the source copy/spec in the same outputs/ folder
+    Task: If a frontend-design skill is available, use it to build a production-grade
+          HTML/CSS/JS implementation from the copy and structure spec. If no such skill
+          is available, skip this step — the well-structured markdown copy + structure
+          spec (or a plain HTML draft) is the final deliverable.
+    DONE when: implementation file saved alongside the source copy/spec in the same
+          outputs/ folder, OR step skipped (no frontend-design skill available — note
+          the skip in the daily log)
 
-STEP 6 — Design Plugin Review (final gate for all visual/copy outputs)
-└── Design plugin
-    Trigger: Every run — reviews all outputs from agents 02, 03, and the frontend-design pass
-    Task: Final critique of copy quality, visual design, conversion alignment, and messaging effectiveness
-    DONE when: design review notes appended to the relevant output file or saved as a companion review file
+STEP 6 — Design Review Pass (OPTIONAL — visual/copy outputs)
+└── Design review plugin/skill, if available in the environment
+    Trigger: Any run producing outputs from agents 02, 03, or the frontend-design pass
+    Task: If a design review plugin/skill is available, run a final critique of copy
+          quality, visual design, conversion alignment, and messaging effectiveness.
+          If not available, skip this step — outputs go to human review as-is.
+    DONE when: design review notes appended to the relevant output file or saved as a
+          companion review file, OR step skipped (no design review plugin/skill
+          available — note the skip in the daily log)
 ```
 
-**Daily run complete when:** All 7 agents have a daily log file for today in their respective `/outputs/` folders. Any landing page outputs have passed the frontend-design skill and Design plugin review steps.
+**Daily run complete when:** All 7 agents have a daily log file for today in their respective `/outputs/` folders. Steps 5–6 are optional: they apply only when the corresponding skills are available in the environment, and a run completes without them if they are not.
+
+**Data availability:** If a checklist item requires data that is not present in `context/` or `inputs/`, mark it `SKIPPED — NO DATA` in the log rather than estimating (see OUTPUT-STANDARDS.md, "Data Availability Rule"). Skipped-for-data items do not block DONE conditions.
 
 ---
 
@@ -113,8 +124,8 @@ STEP 5 — Sequential (after all agents complete their weekly tasks)
 | 01, 04, 06 (Step 2) | 03 must wait for 01 and 06 |
 | 02, 05 (Step 4) | 02 and 05 must wait for 04 |
 | — | 07 always runs first; nothing starts without its priority brief |
-| — | frontend-design pass must wait for both 03 (copy) and 02 (page structure) |
-| — | Design plugin review runs last — after frontend-design pass if applicable |
+| — | frontend-design pass (optional — only if the skill is available) must wait for both 03 (copy) and 02 (page structure) |
+| — | design review pass (optional — only if a plugin/skill is available) runs last — after the frontend-design pass if applicable |
 
 **Rule:** An agent may not begin its primary tasks until its `Pre-Task Protocol` has been completed, including reading the Strategy agent's daily priority brief. If the brief does not exist, the agent must wait.
 
@@ -156,11 +167,11 @@ Agents escalate to the human owner only. Escalations are never routed to other a
 Marketing agents may read product team outputs. If you're running a product team alongside the marketing team, product outputs live at:
 
 ```
-outputs/[PROJECT-ID]/product/01-cpo/           ← CPO vision and strategic direction
-outputs/[PROJECT-ID]/product/02-director/       ← Roadmap priorities and PRDs
-outputs/[PROJECT-ID]/product/03-product-ops/    ← OKR and metrics context
-outputs/[PROJECT-ID]/product/04-pm/             ← User research and PMF signals
-outputs/[PROJECT-ID]/product/05-apm/            ← Validation research
+outputs/[PROJECT-ID]/product/01-cpo/              ← CPO vision and strategic direction
+outputs/[PROJECT-ID]/product/02-director-product/ ← Roadmap priorities and PRDs
+outputs/[PROJECT-ID]/product/03-product-ops/      ← OKR and metrics context
+outputs/[PROJECT-ID]/product/04-pm/               ← User research and PMF signals
+outputs/[PROJECT-ID]/product/05-apm/              ← Validation research
 ```
 
 **Cross-team read triggers:**

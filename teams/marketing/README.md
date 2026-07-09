@@ -78,7 +78,7 @@ Fill these from the templates in `teams/marketing/context-template/`. Agents rea
 outputs/
   [your-project-id]/
     marketing/
-      01-seo/
+      01-seo-content/
       02-cro/
       03-content-copy/
       04-paid-measurement/

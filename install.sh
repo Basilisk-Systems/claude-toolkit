@@ -147,12 +147,22 @@ symlink_file() {
 
     if [[ -e "$target" || -L "$target" ]]; then
         if [[ -L "$target" ]]; then
-            # Existing symlink — refresh it
-            rm "$target"
-            ln -s "$source" "$target"
-            echo -e "    ${CYAN}[update]${NC}  ${display_name}"
-            ((UPDATED++)) || true
-            ITEMS_UPDATED+=("$display_target")
+            # Existing symlink — only refresh it if it points into this toolkit;
+            # a symlink owned by something else is treated like a foreign file.
+            local existing_target
+            existing_target="$(readlink -f "$target" 2>/dev/null || readlink "$target")"
+            if [[ "$existing_target" == "${SCRIPT_DIR}"* || "$FORCE" == true ]]; then
+                rm "$target"
+                ln -s "$source" "$target"
+                echo -e "    ${CYAN}[update]${NC}  ${display_name}"
+                ((UPDATED++)) || true
+                ITEMS_UPDATED+=("$display_target")
+            else
+                echo -e "    ${YELLOW}[skip]${NC}    ${display_name} ${DIM}(foreign symlink, use --force)${NC}"
+                ((SKIPPED++)) || true
+                ITEMS_SKIPPED+=("$display_target")
+                return
+            fi
         elif [[ "$FORCE" == true ]]; then
             # Existing regular file/dir + --force — overwrite
             rm -rf "$target"
@@ -324,6 +334,7 @@ if [[ "$INSTALL_WORKFLOW" == true ]]; then
     echo -e "${GREEN}[bin]${NC} CLI tools"
     mkdir -p "${CLAUDE_DIR}/bin"
     for script in "${SCRIPT_DIR}"/bin/*; do
+        [[ -f "$script" ]] || continue
         name="$(basename "$script")"
         chmod +x "$script"
         symlink_file "$script" "${CLAUDE_DIR}/bin/${name}" "bin"
@@ -339,19 +350,29 @@ if [[ "$INSTALL_CONFIG" == true ]]; then
     copy_config "${SCRIPT_DIR}/config/settings.json" "${CLAUDE_DIR}/settings.json" "config"
     symlink_file "${SCRIPT_DIR}/config/CONTEXT_WEIGHTS.md" "${CLAUDE_DIR}/CONTEXT_WEIGHTS.md" "config"
 
-    # Append conditional snippets to CLAUDE.md based on installed components
-    if [[ "$DRY_RUN" != true && -f "${CLAUDE_DIR}/CLAUDE.md" ]]; then
-        if [[ "$INSTALL_WORKFLOW" == true && -f "${SCRIPT_DIR}/config/snippets/workflow.md" ]]; then
-            cat "${SCRIPT_DIR}/config/snippets/workflow.md" >> "${CLAUDE_DIR}/CLAUDE.md"
-            echo -e "    ${GREEN}[append]${NC}  CLAUDE.md ← workflow commands reference"
+    # Append conditional snippets to CLAUDE.md based on installed components.
+    # Each snippet carries a sentinel comment (<!-- claude-toolkit:NAME -->);
+    # if the sentinel is already present the snippet is never appended again.
+    append_snippet() {
+        local snippet="$1" sentinel="$2" label="$3"
+        [[ -f "$snippet" ]] || return 0
+        if grep -qF "$sentinel" "${CLAUDE_DIR}/CLAUDE.md"; then
+            echo -e "    ${DIM}[skip]    CLAUDE.md ← ${label} (already present)${NC}"
+        else
+            cat "$snippet" >> "${CLAUDE_DIR}/CLAUDE.md"
+            echo -e "    ${GREEN}[append]${NC}  CLAUDE.md ← ${label}"
         fi
-        if [[ "$INSTALL_SKILLS" == true && -f "${SCRIPT_DIR}/config/snippets/skills.md" ]]; then
-            cat "${SCRIPT_DIR}/config/snippets/skills.md" >> "${CLAUDE_DIR}/CLAUDE.md"
-            echo -e "    ${GREEN}[append]${NC}  CLAUDE.md ← skills reference"
+    }
+    if [[ "$DRY_RUN" != true && -f "${CLAUDE_DIR}/CLAUDE.md" ]]; then
+        if [[ "$INSTALL_WORKFLOW" == true ]]; then
+            append_snippet "${SCRIPT_DIR}/config/snippets/workflow.md" "<!-- claude-toolkit:workflow -->" "workflow commands reference"
+        fi
+        if [[ "$INSTALL_SKILLS" == true ]]; then
+            append_snippet "${SCRIPT_DIR}/config/snippets/skills.md" "<!-- claude-toolkit:skills -->" "skills reference"
         fi
     elif [[ "$DRY_RUN" == true ]]; then
-        [[ "$INSTALL_WORKFLOW" == true ]] && echo -e "    ${BLUE}[append]${NC}  CLAUDE.md ← workflow commands reference" || true
-        [[ "$INSTALL_SKILLS" == true ]] && echo -e "    ${BLUE}[append]${NC}  CLAUDE.md ← skills reference" || true
+        [[ "$INSTALL_WORKFLOW" == true ]] && echo -e "    ${BLUE}[append]${NC}  CLAUDE.md ← workflow commands reference (if not already present)" || true
+        [[ "$INSTALL_SKILLS" == true ]] && echo -e "    ${BLUE}[append]${NC}  CLAUDE.md ← skills reference (if not already present)" || true
     fi
 fi
 
@@ -359,9 +380,12 @@ fi
 # Write manifest
 # =============================================================================
 if [[ "$DRY_RUN" != true ]]; then
-    # Build manifest using python for reliable JSON
+    # Build manifest using python for reliable JSON.
+    # Merges with any existing manifest so partial installs don't erase
+    # records from earlier runs: groups are unioned, and file entries from
+    # groups not touched this run are preserved.
     {
-        echo "import json, sys"
+        echo "import json, os"
         echo "manifest = {"
         echo "    'toolkit_path': '${SCRIPT_DIR}',"
         echo "    'installed_at': '$(date -Iseconds)',"
@@ -369,15 +393,24 @@ if [[ "$DRY_RUN" != true ]]; then
         echo "    'groups': [],"
         echo "    'files': []"
         echo "}"
-        # Groups
-        echo "manifest['groups'].append('core')"
-        [[ "$INSTALL_WORKFLOW" == true ]] && echo "manifest['groups'].extend(['workflow', 'bin'])" || true
-        [[ "$INSTALL_SKILLS" == true ]] && echo "manifest['groups'].append('skills')" || true
-        [[ "$INSTALL_GOVCLOUD" == true ]] && echo "manifest['groups'].append('skills-govcloud')" || true
-        [[ "$INSTALL_HOOKS" == true ]] && echo "manifest['groups'].append('hooks')" || true
-        [[ "$INSTALL_CONFIG" == true ]] && echo "manifest['groups'].append('config')" || true
-        # Files
-        for entry in "${MANIFEST_ENTRIES[@]}"; do
+        echo "try:"
+        echo "    with open('${MANIFEST}') as f:"
+        echo "        old = json.load(f)"
+        echo "    manifest['installed_at'] = old.get('installed_at', manifest['installed_at'])"
+        echo "    manifest['groups'] = list(old.get('groups', []))"
+        echo "    manifest['files'] = list(old.get('files', []))"
+        echo "except (FileNotFoundError, json.JSONDecodeError):"
+        echo "    pass"
+        echo "new_groups = ['core']"
+        [[ "$INSTALL_WORKFLOW" == true ]] && echo "new_groups.extend(['workflow', 'bin'])" || true
+        [[ "$INSTALL_SKILLS" == true ]] && echo "new_groups.append('skills')" || true
+        [[ "$INSTALL_GOVCLOUD" == true ]] && echo "new_groups.append('skills-govcloud')" || true
+        [[ "$INSTALL_HOOKS" == true ]] && echo "new_groups.append('hooks')" || true
+        [[ "$INSTALL_CONFIG" == true ]] && echo "new_groups.append('config')" || true
+        # Drop stale entries for groups being (re)installed, then add this run's entries
+        echo "manifest['files'] = [e for e in manifest['files'] if e.get('group') not in new_groups]"
+        echo "manifest['groups'] = sorted(set(manifest['groups']) | set(new_groups))"
+        for entry in "${MANIFEST_ENTRIES[@]+"${MANIFEST_ENTRIES[@]}"}"; do
             echo "manifest['files'].append(${entry})"
         done
         echo "json.dump(manifest, open('${MANIFEST}', 'w'), indent=2)"

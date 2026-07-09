@@ -99,7 +99,7 @@ Run Content & Copy for a cold email sequence:
 | What you're looking for | Where to find it |
 |---|---|
 | This week's strategic priorities | `outputs/[PROJECT-ID]/marketing/07-strategy/` |
-| SEO performance | `outputs/[PROJECT-ID]/marketing/01-seo/` |
+| SEO performance | `outputs/[PROJECT-ID]/marketing/01-seo-content/` |
 | Active A/B tests | `outputs/[PROJECT-ID]/marketing/02-cro/` |
 | Finished copy or emails | `outputs/[PROJECT-ID]/marketing/03-content-copy/` |
 | Paid spend and ROAS | `outputs/[PROJECT-ID]/marketing/04-paid-measurement/` |
@@ -127,6 +127,6 @@ Agents surface to you only when:
 ## Adding a New Project
 
 1. Create `context/[project-id]/` and populate all context files
-2. Create output folders: `outputs/[project-id]/marketing/01-seo/` through `07-strategy/`
+2. Create output folders: `outputs/[project-id]/marketing/01-seo-content/` through `07-strategy/`
 3. When triggering agents, specify `Active project: [PROJECT-ID]`
 4. All outputs will be saved to `outputs/[project-id]/marketing/[agent]/`

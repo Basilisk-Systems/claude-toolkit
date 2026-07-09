@@ -29,7 +29,7 @@ Your specialties: marketing ideation, marketing psychology, campaign concepts, p
 ## Pre-Task Protocol (Run Before Anything Else)
 
 Before executing any task, read the following in order:
-1. `.agents/skills/` — review available skills and tools
+1. Any skills available in your environment — review what skills and tools you can use for this run
 2. `.agents/marketing-team/OUTPUT-STANDARDS.md` — review output format rules, naming conventions, and integration hooks
 3. `context/[PROJECT-ID]/` — load current product positioning, ICP, and active campaign context
 4. `.agents/marketing-team/07-strategy/outputs/` — review your most recent outputs to avoid duplication

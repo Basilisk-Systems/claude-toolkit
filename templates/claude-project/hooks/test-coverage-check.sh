@@ -4,9 +4,13 @@
 # =============================================================================
 # PURPOSE: Runs tests and checks coverage after writing/editing test files
 # TRIGGER: PostToolUse
-# MATCHER: Depends on STACK setting (see below)
-#   JS:     Write(*.test.ts)|Write(*.test.tsx)|Write(*.test.js)|Write(*.test.jsx)|Edit(*.test.ts)|Edit(*.test.tsx)|Edit(*.test.js)|Edit(*.test.jsx)
-#   Python: Write(test_*.py)|Write(*_test.py)|Edit(test_*.py)|Edit(*_test.py)
+# MATCHER: "Write|Edit" — the hook fires on every write and exits 0 early
+#   unless the file looks like a test file for the configured STACK:
+#   JS:     *.test.ts / *.test.tsx / *.test.js / *.test.jsx
+#   Python: test_*.py / *_test.py
+#
+# FEEDBACK: PostToolUse stdout on exit 0 is NOT shown to Claude — failures
+#   are reported on stderr with exit 2 so Claude can react.
 #
 # CONFIGURATION: Edit the variables below.
 # =============================================================================
@@ -27,7 +31,7 @@ fi
 
 # --- JavaScript/TypeScript stack ---
 if [[ "$STACK" == "js" ]]; then
-    # Only process JS/TS test files
+    # Early exit: only process JS/TS test files
     if [[ ! "$FILE_PATH" =~ \.test\.(ts|tsx|js|jsx)$ ]]; then
         exit 0
     fi
@@ -60,36 +64,35 @@ if [[ "$STACK" == "js" ]]; then
     TEST_EXIT=$?
 
     if [ $TEST_EXIT -ne 0 ]; then
-        echo "$TEST_OUTPUT"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "TESTS FAILED"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo "Fix the failing tests before proceeding."
-        exit 0
+        {
+            echo "TESTS FAILED: $TEST_FILE"
+            echo ""
+            echo "$TEST_OUTPUT" | tail -c 4000
+            echo ""
+            echo "Fix the failing tests before proceeding."
+        } >&2
+        exit 2
     fi
 
     echo "Tests passed"
     echo ""
 
-    # Run coverage check
-    SOURCE_FILE=$(echo "$FILE_PATH" | sed 's/\.test\.\(ts\|tsx\|js\|jsx\)$/.\1/' | sed 's/__tests__\///')
+    # Run coverage check (portable sed -E instead of GNU-only \| alternation)
+    SOURCE_FILE=$(echo "$FILE_PATH" | sed -E 's/\.test\.(ts|tsx|js|jsx)$/.\1/' | sed 's/__tests__\///')
 
     if [[ -f "$SOURCE_FILE" ]]; then
         echo "Checking coverage for: $(basename "$SOURCE_FILE")"
         COVERAGE_OUTPUT=$(npm run test:coverage -- --reporter=text "$FILE_PATH" 2>&1)
 
         if echo "$COVERAGE_OUTPUT" | grep -qE "Coverage.*below.*threshold|ERROR.*Coverage"; then
-            echo ""
-            echo "$COVERAGE_OUTPUT" | grep -A5 -E "Coverage|File|%"
-            echo ""
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "COVERAGE BELOW ${COVERAGE_THRESHOLD}% THRESHOLD"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo ""
-            echo "Add more tests to improve coverage."
-            exit 0
+            {
+                echo "COVERAGE BELOW ${COVERAGE_THRESHOLD}% THRESHOLD"
+                echo ""
+                echo "$COVERAGE_OUTPUT" | grep -A5 -E "Coverage|File|%"
+                echo ""
+                echo "Add more tests to improve coverage."
+            } >&2
+            exit 2
         fi
 
         echo "Coverage meets threshold"
@@ -97,7 +100,7 @@ if [[ "$STACK" == "js" ]]; then
 
 # --- Python stack ---
 elif [[ "$STACK" == "python" ]]; then
-    # Only process Python test files
+    # Early exit: only process Python test files
     if [[ ! "$FILE_PATH" =~ (test_[^/]*\.py|[^/]*_test\.py)$ ]]; then
         exit 0
     fi
@@ -117,14 +120,14 @@ elif [[ "$STACK" == "python" ]]; then
     TEST_EXIT=$?
 
     if [ $TEST_EXIT -ne 0 ]; then
-        echo "$TEST_OUTPUT"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "TESTS FAILED"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo "Fix the failing tests before proceeding."
-        exit 0
+        {
+            echo "TESTS FAILED: $TEST_FILE"
+            echo ""
+            echo "$TEST_OUTPUT" | tail -c 4000
+            echo ""
+            echo "Fix the failing tests before proceeding."
+        } >&2
+        exit 2
     fi
 
     echo "Tests passed"
@@ -136,14 +139,14 @@ elif [[ "$STACK" == "python" ]]; then
     COVERAGE_EXIT=$?
 
     if [ $COVERAGE_EXIT -ne 0 ]; then
-        echo "$COVERAGE_OUTPUT" | tail -20
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "COVERAGE BELOW ${COVERAGE_THRESHOLD}% THRESHOLD"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo "Add more tests to improve coverage."
-        exit 0
+        {
+            echo "COVERAGE BELOW ${COVERAGE_THRESHOLD}% THRESHOLD"
+            echo ""
+            echo "$COVERAGE_OUTPUT" | tail -20
+            echo ""
+            echo "Add more tests to improve coverage."
+        } >&2
+        exit 2
     fi
 
     echo "Coverage meets threshold"

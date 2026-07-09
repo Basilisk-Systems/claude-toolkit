@@ -24,7 +24,8 @@ if [ -z "$FILE_PATH" ]; then
     exit 0
 fi
 
-# Skip if not a TS/JS file (double-check)
+# Skip if not a TS/JS file (settings matcher is plain "Write|Edit",
+# so this hook fires for every write — bail out early)
 if [[ ! "$FILE_PATH" =~ \.(ts|tsx|js|jsx)$ ]]; then
     exit 0
 fi
@@ -38,15 +39,16 @@ fi
 # RUN PRETTIER
 # =============================================================================
 
-# Try different prettier locations
+# Try different prettier locations. Use npx --no-install so npx can never
+# hang on an interactive "install prettier?" prompt; if prettier is simply
+# not available anywhere, exit 0 silently.
 if command -v prettier &> /dev/null; then
     FORMATTER="prettier"
 elif [ -f "./node_modules/.bin/prettier" ]; then
     FORMATTER="./node_modules/.bin/prettier"
-elif command -v npx &> /dev/null; then
-    FORMATTER="npx prettier"
+elif command -v npx &> /dev/null && npx --no-install prettier --version &> /dev/null; then
+    FORMATTER="npx --no-install prettier"
 else
-    echo "⚠️ Prettier not found. Run: npm install -g prettier" >&2
     exit 0
 fi
 

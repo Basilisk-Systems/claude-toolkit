@@ -18,7 +18,7 @@ outputs/[PROJECT-ID]/marketing/[agent-folder]/[filename].md
 
 | Agent | Visible Folder |
 |---|---|
-| 01 SEO & Content | `outputs/[PROJECT-ID]/marketing/01-seo/` |
+| 01 SEO & Content | `outputs/[PROJECT-ID]/marketing/01-seo-content/` |
 | 02 CRO | `outputs/[PROJECT-ID]/marketing/02-cro/` |
 | 03 Content & Copy | `outputs/[PROJECT-ID]/marketing/03-content-copy/` |
 | 04 Paid & Measurement | `outputs/[PROJECT-ID]/marketing/04-paid-measurement/` |
@@ -69,27 +69,35 @@ All markdown output files must use the full naming convention:
 |---|---|---|
 | Research, briefs, plans, calendars, drafts | `.md` | Default for all internal docs |
 | Keyword lists, audit reports, copy drafts | `.md` | Always markdown |
-| Client-facing reports, one-pagers, proposals | `.pdf` | Use the `pdf` skill to render |
-| Formal campaign performance reports | `.pdf` | Monthly cadence |
+| Client-facing reports, one-pagers, proposals | `.pdf` if a `pdf` skill is available; otherwise `.md` | Render with the `pdf` skill when available; otherwise deliver well-structured markdown |
+| Formal campaign performance reports | `.pdf` if a `pdf` skill is available; otherwise `.md` | Monthly cadence |
 | Outreach sequences, email drafts | `.md` | Tagged for future platform handoff |
-| Landing page copy + CRO structure | `.md` → frontend-design skill → Design plugin | See Frontend Implementation rule below |
+| Landing page copy + CRO structure | `.md` (+ optional frontend-design / design review passes) | See Frontend Implementation rule below |
 
 ## Frontend Implementation Rule
 
-Any run that produces a landing page asset (copy from Agent 03 + page structure from Agent 02) **must** pass through two additional review steps before the output is considered complete:
+Any run that produces a landing page asset (copy from Agent 03 + page structure from Agent 02) passes through two additional review steps **if the corresponding skills are available in the environment**. Neither step is required for the run to complete: if a skill is not available, the well-structured markdown copy + structure spec (or a plain HTML draft) is the final deliverable, and the skip is noted in the daily log.
 
-**Step 1 — frontend-design skill**
-- Triggered by: Agent 02 CRO page structure + Agent 03 landing page copy existing together
+**Step 1 — frontend-design skill (optional)**
+- Triggered by: Agent 02 CRO page structure + Agent 03 landing page copy existing together, and a frontend-design skill being available
 - Task: Build a production-grade HTML/CSS/JS implementation using the copy and structure as inputs
 - Output: A working implementation file saved alongside the source copy in the same `outputs/` folder
 - Naming: `[PROJECT-ID]_MKT_[AGENT-CODE]_landing-page-impl_[YYYY-MM-DD].html`
 - The skill must commit to a bold, intentional aesthetic direction — no generic AI defaults
+- If no frontend-design skill is available: skip this step; the markdown copy + structure spec stands as the deliverable
 
-**Step 2 — Design plugin review**
-- Triggered by: Completion of the frontend-design pass (or any visual/copy output, even without an implementation)
+**Step 2 — design review (optional)**
+- Triggered by: Completion of the frontend-design pass (or any visual/copy output, even without an implementation), and a design review plugin/skill being available
 - Task: Final critique covering copy effectiveness, visual design quality, conversion alignment, and messaging clarity
 - Output: Review notes appended to the relevant output file or saved as `[filename]-design-review.md`
-- This is the final gate before any landing page is considered ready for deployment or human review
+- When run, this is the final step before a landing page goes to deployment or human review
+- If no design review plugin/skill is available: skip this step; the output goes to human review as-is
+
+---
+
+## Data Availability Rule
+
+Task checklists may reference live metrics (reply rates, CAC, ROAS, churn cohorts, open rates, etc.). If a checklist item requires data that is not present in `context/` or `inputs/`, mark it `SKIPPED — NO DATA` in the log rather than estimating. Never fabricate or extrapolate metric values to complete a checklist item.
 
 ---
 
@@ -115,7 +123,7 @@ Marketing agents may read product team outputs for context. Use these paths:
 | What to read | Path |
 |---|---|
 | CPO vision and strategic direction | `outputs/[PROJECT-ID]/product/01-cpo/` |
-| Product roadmap and PRDs | `outputs/[PROJECT-ID]/product/02-director/` |
+| Product roadmap and PRDs | `outputs/[PROJECT-ID]/product/02-director-product/` |
 | OKR and metrics context | `outputs/[PROJECT-ID]/product/03-product-ops/` |
 | User research and PMF signals | `outputs/[PROJECT-ID]/product/04-pm/` |
 | Validation research | `outputs/[PROJECT-ID]/product/05-apm/` |
