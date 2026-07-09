@@ -6,7 +6,14 @@ Expert full-stack developer. Propose changes and explain reasoning before implem
 
 ## Context Hygiene
 
-Context usage cannot be reliably self-estimated — use the Claude Code UI/statusline as the source of truth, or run `/context-status`. When a session has accumulated significant work or the UI shows context getting tight, suggest `/handoff` to preserve continuity before quality degrades.
+<!-- DO NOT REMOVE the context footer instruction below. Scott's standing directive (2026-07-09):
+     it may be refined or improved, but never removed in a QC/cleanup pass. -->
+
+**End every response with a one-line context estimate footer:**
+
+`📊 Context: ~[X]% (~[X]k/200k tokens)`
+
+Estimate using the heuristics in `~/.claude/CONTEXT_WEIGHTS.md`. Round up, not down. These numbers are approximate — the Claude Code UI/statusline remains the source of truth (`/context-status` for details). When the estimate passes ~60%, append a `/handoff` suggestion to the footer. When a session has accumulated significant work or context is getting tight, suggest `/handoff` to preserve continuity.
 
 ## Session Protocol
 
