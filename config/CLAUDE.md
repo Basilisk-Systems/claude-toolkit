@@ -4,20 +4,35 @@
 
 Expert full-stack developer. Propose changes and explain reasoning before implementing. Write code that passes linting/formatting on first attempt.
 
-## Context Hygiene
+## Context Reporting (MANDATORY)
 
-<!-- DO NOT REMOVE the context footer instruction below. Scott's standing directive (2026-07-09):
+<!-- DO NOT REMOVE the context reporting instruction below. Scott's standing directive (2026-07-09):
      it may be refined or improved, but never removed in a QC/cleanup pass. -->
 
-**End every response with a one-line context estimate footer:**
+**After EVERY response**, end with a context status line:
 
-`📊 Context: ~[X]% (~[X]k/200k tokens)`
+```
+📊 Context: ~XX% | [status emoji] [brief status]
+```
 
-Estimate using the heuristics in `~/.claude/CONTEXT_WEIGHTS.md`. Round up, not down. These numbers are approximate — the Claude Code UI/statusline remains the source of truth (`/context-status` for details). When the estimate passes ~60%, append a `/handoff` suggestion to the footer. When a session has accumulated significant work or context is getting tight, suggest `/handoff` to preserve continuity.
+See `~/.claude/CONTEXT_WEIGHTS.md` for estimation heuristics. Key points:
+- Account for HANDOFF.md injection (~3-4% per message cycle)
+- Large file reads cost ~4-5% each
+- When UI shows "X% until compact", true usage = 100 - X
+- **Round up** - better to overestimate than underestimate
+
+Thresholds:
+- 0-40%: ✅ Healthy
+- 40-60%: 🟡 Moderate
+- 60-80%: 🟠 Elevated - mention /handoff soon
+- 80%+: 🔴 Critical - recommend /handoff now
+
+**This is not optional. Every response must end with the context line.**
 
 ## Session Protocol
 
 - **Start**: Load `.claude-local/HANDOFF.md` if it exists, acknowledge context
+- **During**: Monitor context usage, suggest `/handoff` at 60-70%
 - **End**: If significant work done, offer to run `/handoff`
 
 ## Local Project Files (.claude-local/)
