@@ -35,6 +35,7 @@ cd ~/claude-toolkit
 
 | Command | Description |
 |---------|-------------|
+| `/design-spec` | Write a design spec in the `SPEC/` house style, sync decisions to the ticket |
 | `/handoff` | Generate session handoff for context continuity |
 | `/commit` | Stage changes, verify docs, prepare commit |
 | `/complete` | Complete a ticket with CHANGELOG/README updates |
@@ -77,6 +78,7 @@ Knowledge files that auto-load when relevant:
 - `security` — OWASP/NIST security best practices
 - `security-engineer` — Active codebase security auditing
 - `legal-drafting` — Contracts, NDAs, SOWs (Basilisk Systems)
+- `spec-writing` — Design-spec house style: structure, decision tables
 - `writing` — Human-passing prose for blogs, copy, email
 
 ### GovCloud Skills (`--with-govcloud`)

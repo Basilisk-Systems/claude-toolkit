@@ -4,7 +4,7 @@
 
 **AWS CDK:** `aws-cdk-core`, `aws-cdk-patterns`, `aws-cdk-lambda`, `aws-cdk-dynamodb`
 **React:** `react-core`, `react-state`
-**Other:** `security`, `devops-cicd`
+**Other:** `security`, `devops-cicd`, `spec-writing`
 
 Skills load automatically. For AWS work, I follow Well-Architected principles (details in aws-cdk-core skill).
 
