@@ -133,7 +133,8 @@ The workflow is: `/blueprint` → approve → `/clear-context` → `/implement`
 1. Get current date: `date +%Y-%m-%d` (never assume)
 2. Update CHANGELOG.md (match version, use actual date)
 3. Update README.md if user-facing changes
-4. Use `/complete [task]` for guided workflow
+4. Run `/smoke-test <ticket-id>` first when the ticket has E2E/smoke testing criteria
+5. Use `/complete [task]` for guided workflow
 
 ## Security Rules
 
