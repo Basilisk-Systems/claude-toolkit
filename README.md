@@ -65,6 +65,7 @@ Knowledge files that auto-load when relevant:
 **Frontend:**
 - `react-core` — React, TypeScript, Vite, TailwindCSS, shadcn/ui
 - `react-state` — Redux Toolkit, RTK Query
+- `web-ui-verify` — Headless-browser visual verification (screenshots, pixel sampling, geometry)
 
 **Mobile (React Native + Expo):**
 - `react-native-expo` — Managed workflow, Expo Router, performance
