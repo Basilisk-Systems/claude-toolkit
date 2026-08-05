@@ -6,6 +6,7 @@ Available slash commands for development workflow:
 
 | Command | Purpose |
 |---------|---------|
+| `/design-spec` | Research and write a design spec, sync decisions to the ticket |
 | `/blueprint` | Research codebase and write an implementation plan |
 | `/implement` | Orchestrate sub-agents to execute plan phases |
 | `/branch` | Create a semantic branch from a ticket description |
