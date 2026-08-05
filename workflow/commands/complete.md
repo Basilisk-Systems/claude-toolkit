@@ -25,12 +25,30 @@ If the argument looks like a ticket ID (e.g., `TICKET-98`, `ABC-12`, or any `PRE
    ls docs/*TICKET* docs/*ticket* 2>/dev/null
    ```
 
-2. If found, search for the ticket section and mark all acceptance criteria checkboxes as complete:
+2. **Smoke test gate.** If the ticket's section contains an E2E / Integration /
+   smoke testing section with unchecked items:
+   - Check `.claude-local/SMOKE_TESTS.md` for an entry for this ticket ID.
+   - If a **PASS** entry exists (or the smoke test was run earlier in this session),
+     proceed — and honor its BLOCKED annotations in the next step.
+   - If a **FAIL** entry is the latest result, stop and tell the user to resolve the
+     failures (or re-run `/smoke-test`) before completing.
+   - If there is **no entry**, ask via AskUserQuestion:
+     - **"Run /smoke-test first (Recommended)"** — stop here; the user runs
+       `/smoke-test <ticket-id>` and re-invokes `/complete` after it passes
+     - **"Complete anyway — check all boxes"** — user asserts the testing was done;
+       proceed normally
+     - **"Complete ACs only — leave testing boxes unchecked"** — mark acceptance
+       criteria but leave the E2E/smoke checkboxes for a later QA pass
+
+3. If the ticket file was found, mark the ticket's checkboxes complete per the gate outcome:
    - Find lines matching `- [ ]` under the ticket's section
-   - Replace `- [ ]` with `- [x]` for all acceptance criteria in that ticket
+   - Replace `- [ ]` with `- [x]` for that ticket's criteria
+   - **Except items recorded as BLOCKED** in the smoke test results: leave those
+     `- [ ]` and append ` — BLOCKED: <reason> (smoke test YYYY-MM-DD)` so the open
+     box is self-explanatory
    - Do NOT modify checkboxes belonging to other tickets
 
-3. If no ticket file is found, skip this step silently.
+4. If no ticket file is found, skip this step silently.
 
 ### Step 3: Gather Context
 1. Read the current version from `package.json` or `pyproject.toml`:

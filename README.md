@@ -38,6 +38,7 @@ cd ~/claude-toolkit
 | `/design-spec` | Write a design spec in the `SPEC/` house style, sync decisions to the ticket |
 | `/handoff` | Generate session handoff for context continuity |
 | `/commit` | Stage changes, verify docs, prepare commit |
+| `/smoke-test` | Generate and run an interactive smoke test for a ticket |
 | `/complete` | Complete a ticket with CHANGELOG/README updates |
 | `/pre-merge` | Generate merge request title and description |
 | `/estimate-context` | Estimate context usage for a plan |
