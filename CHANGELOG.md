@@ -21,6 +21,14 @@ This repository is not versioned; entries are grouped by date under Unreleased.
   `.claude-local/SMOKE_TESTS.md`.
 
 ### Changed
+- 2026-08-06: `/standup summary` "Yesterday" is now delta-based — it reports only
+  items completed since the last summary run, then files them under a
+  `## Reported` section in `STANDUP.md` so they never appear twice. Previously
+  it sourced "Yesterday" from the Previous Period archive, which rolls on a 24h
+  timer misaligned with standups and calendar days, so same-day work leaked
+  into "Yesterday". Works with both Current and Previous Period, survives
+  period rollovers, and needs no changes to `/commit`, `/complete`, or
+  `/pre-merge`.
 - 2026-08-04: `/complete` Step 2 now gates ticket checkbox completion on a
   `/smoke-test` PASS record (or explicit user override) when the ticket has
   testing criteria, and annotates BLOCKED items instead of checking them.
