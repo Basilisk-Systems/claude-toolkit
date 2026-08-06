@@ -39,6 +39,8 @@ Usage:
 How it works:
   • STANDUP.md tracks your current work session
   • Items auto-populate via /commit, /complete, /pre-merge
+  • /standup summary reports only items completed since the
+    LAST summary run, then files them under "## Reported"
   • After 24 hours, you'll be prompted to start a new period
   • Previous period is archived for reference
 
@@ -72,10 +74,11 @@ cat .claude-local/STANDUP.md
 ```
 
 Parse the file to extract:
-- Completed items from "## Completed" section
+- **Unreported completed items**: everything in a "## Completed" section that is NOT under a "## Reported" section — from the Current Period AND the Previous Period. Items under "## Reported" have already appeared in an earlier standup and must never be reported again.
 - In Progress items from "## In Progress" section
 - Blockers from "## Blockers" section
-- Previous period completed items (if any)
+
+**Migration note**: If the file has no "## Reported" sections yet (first run under this scheme), treat everything in "## Completed" as unreported, but use judgment — only surface recent items (roughly the last 1-2 work days) in the output; older backlog items get moved straight to Reported in step 6 without being shown.
 
 ### 3. Get current branch for context
 
@@ -93,7 +96,7 @@ Format output for easy copying to Slack/Teams/Jira:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Yesterday:**
-- [completed items from previous period, or current if same day]
+- [unreported completed items — everything logged since the last summary run]
 
 **Today:**
 - [in-progress items, or planned work based on branch]
@@ -105,7 +108,7 @@ Format output for easy copying to Slack/Teams/Jira:
 ```
 
 Rules for summary:
-- "Yesterday" = Previous Period completed items, OR Current Period completed if started today
+- "Yesterday" = the **unreported completed items** from step 2 (i.e., everything completed since the last `/standup summary` run, regardless of period boundaries or calendar dates). Do NOT source this from the Previous Period archive — period rollovers happen on a 24h timer and don't align with standups. If there are no unreported items, write "- Nothing new since last standup"
 - "Today" = In Progress items. If empty, infer from branch name (e.g., "TICKET-44" → "Working on TICKET-44")
 - "Blockers" = Blockers section, default to "None"
 - Keep items concise - strip ticket prefixes like `feat(TICKET-XX):` to just the description
@@ -127,6 +130,27 @@ Write the generated summary (without the decorative borders) to `.claude-local/S
 ```
 
 This file can be opened in the IDE for easy copy-paste.
+
+### 6. Mark reported items in STANDUP.md
+
+Move every item that was just reported (and, on first migration, any older unreported backlog) out of its "## Completed" section into a "## Reported" section within the SAME period, so it is never reported twice:
+
+- If the period has no "## Reported" section, create one directly below its "## Completed" section
+- Add a dated subheading line at the top of the Reported section, then the moved items beneath it:
+
+```markdown
+## Completed
+<!-- Auto-populated by /commit, /complete, /pre-merge -->
+
+## Reported
+<!-- Items below appeared in a standup summary and won't be reported again -->
+### Standup [date from `date '+%Y-%m-%d %H:%M %Z'`]
+- [x] [moved item]
+- [x] [moved item]
+```
+
+- Apply this in both the Current Period and the Previous Period if either held unreported items
+- Leave the "## Completed" section in place (with its placeholder comment) so /commit, /complete, /pre-merge keep logging there
 
 Then stop.
 
@@ -184,7 +208,7 @@ Options:
 - "Add blocker" (then ask for text input)
 
 b. **Archive current period**:
-- Move "Current Period" section to "Previous Period"
+- Move "Current Period" section to "Previous Period" (including its "## Reported" section, if any — unreported Completed items stay unreported in the archive and will surface in the next `/standup summary`)
 - Clear "In Progress" and "Completed" sections
 - Update "Started" with current timestamp: `date '+%Y-%m-%d %H:%M %Z'`
 - Add any blockers to the Blockers section
@@ -211,7 +235,7 @@ git log --oneline -3 2>/dev/null
 [from STANDUP.md]
 
 ### Completed This Period
-[from STANDUP.md]
+[unreported items from "## Completed"; if a "## Reported" section exists, add a one-line note like "(+ N items already reported in standups)"]
 
 ### Blockers
 [from STANDUP.md]
