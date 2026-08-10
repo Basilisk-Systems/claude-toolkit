@@ -381,3 +381,9 @@ Combine agent results and present to the user.
 - Specify what the agent should report back and set a word limit to keep results focused.
 - Use `model: sonnet` in agent calls for routine work; default (Opus) for tasks requiring deeper reasoning.
 - Commands in `core/commands/` are always installed; commands in `workflow/commands/` require `--with-workflow`.
+
+## License
+
+Copyright 2026 Basilisk Systems, LLC.
+
+Licensed under the [Apache License, Version 2.0](LICENSE). See the [NOTICE](NOTICE) file for attribution requirements.
