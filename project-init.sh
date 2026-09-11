@@ -170,7 +170,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "PROJECT HOOKS SETUP"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "session-handoff.sh is always included (auto-loads HANDOFF.md on new sessions)."
+echo "session-handoff.sh is always included (auto-loads HANDOFF.md on new sessions with an opening brief; /clear-context skip suppresses it once)."
 echo ""
 
 # Helper: prompt with default, respecting AUTO_YES

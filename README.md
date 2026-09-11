@@ -43,7 +43,7 @@ cd ~/claude-toolkit
 | `/pre-merge` | Generate merge request title and description |
 | `/estimate-context` | Estimate context usage for a plan |
 | `/context-status` | Check current context window usage |
-| `/clear-context` | Clear context and reload HANDOFF.md |
+| `/clear-context [skip]` | Clear context and reload HANDOFF.md with an opening brief (`skip` = silent fresh context, e.g. before `/implement`) |
 | `/standup` | View/start work session tracking |
 | `/session-summary` | Show session telemetry (tokens, cost, agents, files, duration) |
 | `/help` | List all available commands and skills |
@@ -220,7 +220,7 @@ Installs **per-project** hooks into `.claude/hooks/` with a matching `.claude/se
 
 | Hook | Description | Default |
 |------|-------------|---------|
-| `session-handoff.sh` | Auto-loads HANDOFF.md on new sessions | Always included |
+| `session-handoff.sh` | Auto-loads HANDOFF.md on new sessions and asks for an opening brief; honours `/clear-context skip` | Always included |
 | `block-cloud-cli.sh` | Blocks cloud CLI commands (aws, cdk, gcloud, etc.) | Prompted (Y) |
 | `pre-commit-check.sh` | Runs pre-commit checks before git commits | Prompted (Y) |
 | `test-coverage-check.sh` | Checks test coverage after writing test files | Prompted (Y) |
