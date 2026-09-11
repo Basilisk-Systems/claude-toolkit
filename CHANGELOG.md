@@ -8,6 +8,11 @@ This repository is not versioned; entries are grouped by date under Unreleased.
 ## [Unreleased]
 
 ### Added
+- 2026-09-11: `/clear-context skip` — one-shot suppression of the HANDOFF.md
+  reload (and the opening brief) in the next fresh context, via a
+  `.claude-local/.handoff-skip` sentinel consumed by `session-handoff.sh`.
+  Use it before `/implement`, which reads the plan file and
+  `IMPLEMENT_STATE.md` rather than the handoff.
 - 2026-08-05: `web-ui-verify` skill — headless-browser visual verification for
   web UI changes: launch the dev server, drive Chromium via playwright-core
   (with browser-binary discovery), then prove claims with screenshots,
@@ -21,6 +26,11 @@ This repository is not versioned; entries are grouped by date under Unreleased.
   `.claude-local/SMOKE_TESTS.md`.
 
 ### Changed
+- 2026-09-11: `session-handoff.sh` now appends an instruction after the
+  injected HANDOFF.md asking Claude to open its first reply with a 4-6 bullet
+  "Where we left off" brief (branch/commit, verified working, blockers, next
+  actions). It also ignores the built-in `/clear` prompt so that keystroke can
+  never rewrite the session marker or consume the skip sentinel.
 - 2026-08-06: `/standup summary` "Yesterday" is now delta-based — it reports only
   items completed since the last summary run, then files them under a
   `## Reported` section in `STANDUP.md` so they never appear twice. Previously

@@ -17,7 +17,7 @@ Available slash commands for development workflow:
 | `/pre-merge` | Generate merge request title and description |
 | `/estimate-context` | Estimate context usage for a plan |
 | `/context-status` | Check current context window usage |
-| `/clear-context` | Clear context and reload HANDOFF.md |
+| `/clear-context [skip]` | Clear context and reload HANDOFF.md with an opening brief (`skip` = silent fresh context, e.g. before `/implement`) |
 | `/standup` | View/start work session tracking |
 | `/session-summary` | Show session telemetry (tokens, cost, agents) |
 | `/help` | List all available commands and skills |
