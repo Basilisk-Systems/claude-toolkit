@@ -220,7 +220,7 @@ Installs **per-project** hooks into `.claude/hooks/` with a matching `.claude/se
 
 | Hook | Description | Default |
 |------|-------------|---------|
-| `session-handoff.sh` | Auto-loads HANDOFF.md on new sessions and asks for an opening brief; honours `/clear-context skip` | Always included |
+| `session-handoff.sh` | Auto-loads HANDOFF.md on new sessions and asks for an opening brief (instruction first, and points at the full file when the handoff exceeds the hook-output cap); honours `/clear-context skip` | Always included |
 | `block-cloud-cli.sh` | Blocks cloud CLI commands (aws, cdk, gcloud, etc.) | Prompted (Y) |
 | `pre-commit-check.sh` | Runs pre-commit checks before git commits | Prompted (Y) |
 | `test-coverage-check.sh` | Checks test coverage after writing test files | Prompted (Y) |
