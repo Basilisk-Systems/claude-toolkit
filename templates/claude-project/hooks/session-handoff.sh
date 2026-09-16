@@ -62,21 +62,35 @@ if [[ -f "$SKIP_FILE" ]]; then
     exit 0
 fi
 
-# New session or marker was cleared - output HANDOFF.md
+# New session or marker was cleared - output HANDOFF.md.
+#
+# Claude Code caps inline hook output (~10 KB); anything larger is written to a
+# tool-results file and Claude only sees a ~2 KB preview. The instruction MUST
+# therefore come first, and large handoffs must tell Claude to Read the file.
+HANDOFF_BYTES=$(wc -c < "$HANDOFF_FILE" | tr -d ' ')
+HANDOFF_ABS="$(pwd)/$HANDOFF_FILE"
+LARGE_THRESHOLD=8000
+
+echo ""
+echo "INSTRUCTION FOR THIS TURN: This is a fresh context. Open your reply with a"
+echo "short 'Where we left off' brief of the handoff below — 4 to 6 bullets covering"
+echo "branch/commit, what is verified working, open blockers, and the next 1-2"
+echo "actions. Then address the user's message. Do not repeat the full handoff."
+if [[ "$HANDOFF_BYTES" -gt "$LARGE_THRESHOLD" ]]; then
+    echo ""
+    echo "NOTE: HANDOFF.md is ${HANDOFF_BYTES} bytes and this hook output will be"
+    echo "truncated to a preview. Before writing the brief, Read the full file:"
+    echo "  ${HANDOFF_ABS}"
+fi
 echo ""
 echo "=============================================="
-echo "SESSION CONTEXT (from HANDOFF.md)"
+echo "SESSION CONTEXT (from HANDOFF.md, ${HANDOFF_BYTES} bytes)"
 echo "=============================================="
 cat "$HANDOFF_FILE"
 echo ""
 echo "=============================================="
 echo "END SESSION CONTEXT"
 echo "=============================================="
-echo ""
-echo "INSTRUCTION FOR THIS TURN: This is a fresh context. Open your reply with a"
-echo "short 'Where we left off' brief of the handoff above — 4 to 6 bullets covering"
-echo "branch/commit, what is verified working, open blockers, and the next 1-2"
-echo "actions. Then address the user's message. Do not repeat the full handoff."
 echo ""
 
 # Update marker with current session

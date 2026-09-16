@@ -26,6 +26,13 @@ This repository is not versioned; entries are grouped by date under Unreleased.
   `.claude-local/SMOKE_TESTS.md`.
 
 ### Changed
+- 2026-09-16: `session-handoff.sh` prints the "Where we left off" instruction
+  *before* the injected HANDOFF.md instead of after it. Claude Code caps inline
+  hook output at ~10 KB and persists anything larger to a tool-results file,
+  showing Claude only a ~2 KB preview, so a trailing instruction was silently
+  lost once handoffs grew past the cap. When HANDOFF.md exceeds 8 KB the hook
+  also emits a note telling Claude to Read the full file at its absolute path
+  before writing the brief, and the section header now shows the file size.
 - 2026-09-11: `session-handoff.sh` now appends an instruction after the
   injected HANDOFF.md asking Claude to open its first reply with a 4-6 bullet
   "Where we left off" brief (branch/commit, verified working, blockers, next
