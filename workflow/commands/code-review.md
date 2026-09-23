@@ -183,6 +183,7 @@ Changed test files: [TEST_CHANGED_FILES]
 1. **New code without tests**: For each new function/class/method, search for corresponding tests. Use Grep to search test directories.
 2. **Modified code without updated tests**: If behavior changed, did tests update?
 3. **Test quality**: Are new tests testing behavior or just "doesn't throw"? Look for meaningful assertions.
+   If the `test-writing` skill is installed, apply its Review checklist (mutation each test kills, no second literal pin, no identical-path parametrize, no mock-echo assertions, reasons on every `# pragma: no cover`).
 4. **Edge cases**: Are error paths tested? Boundary conditions? Empty inputs?
 5. **Test isolation**: Tests depending on external services without mocking? Order dependencies?
 6. **Missing test types**: API changes need integration tests. New utilities need unit tests.

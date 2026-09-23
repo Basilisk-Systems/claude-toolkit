@@ -8,6 +8,15 @@ This repository is not versioned; entries are grouped by date under Unreleased.
 ## [Unreleased]
 
 ### Added
+- 2026-09-23: `test-writing` skill — purposeful, non-redundant tests. A
+  fact-ledger-then-survey workflow, the "which mutation kills this test?" gate
+  before a test is written, a twelve-row frivolous-test catalogue (did-not-raise,
+  second literal pin, identical-path parametrize, echoing the mock, coverage
+  bait, forced defensive branches with no contract, ...), a coverage-dynamic-
+  contexts recipe for finding same-file duplicate tests, scoped mutation runs
+  (mutmut / Stryker) with survivor triage, and a ten-item review checklist the
+  `/code-review` Testing agent now cites. Registered in the README skill list
+  and `config/snippets/skills.md`.
 - 2026-09-11: `/clear-context skip` — one-shot suppression of the HANDOFF.md
   reload (and the opening brief) in the next fresh context, via a
   `.claude-local/.handoff-skip` sentinel consumed by `session-handoff.sh`.

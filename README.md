@@ -89,6 +89,7 @@ Knowledge files that auto-load when relevant:
 - `security-engineer` — Active codebase security auditing
 - `legal-drafting` — Contracts, NDAs, SOWs (Basilisk Systems)
 - `spec-writing` — Design-spec house style: structure, decision tables
+- `test-writing` — Purposeful, non-redundant tests: fact ledger, "which mutation kills this test?", frivolous-test catalogue, redundancy and mutation tooling
 - `writing` — Human-passing prose for blogs, copy, email
 
 ### GovCloud Skills (`--with-govcloud`)
