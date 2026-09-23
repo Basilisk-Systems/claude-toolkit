@@ -26,11 +26,11 @@ echo "$ARGUMENTS" | grep -qE '^[A-Z]+-[0-9]+$'
 Read `docs/TICKETS.md` and find the heading matching the ticket ID:
 
 ```bash
-grep -E "^## $ARGUMENTS:" docs/TICKETS.md
+grep -E "^#{2,4} $ARGUMENTS:" docs/TICKETS.md
 ```
 
 Extract:
-- **Title** — the text after `## PROJ-XXX: ` on the heading line
+- **Title** — the text after the `PROJ-XXX: ` heading prefix (heading level varies by project: `##` to `####`)
 - **Type** — the `**Type:**` field value (Feature, Bug Fix, Chore, etc.)
 - **Status** — check for `**Status:** ✅ Complete` — if complete, warn the user and ask if they want to proceed
 
