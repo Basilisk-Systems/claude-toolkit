@@ -13,6 +13,20 @@ This repository is not versioned; entries are grouped by date under Unreleased.
   `.claude-local/.handoff-skip` sentinel consumed by `session-handoff.sh`.
   Use it before `/implement`, which reads the plan file and
   `IMPLEMENT_STATE.md` rather than the handoff.
+- 2026-09-04: six skills for the Postgres + Fargate + Descope + Vite stack
+  (the ODIN v2 build's named toolkit gaps): `postgres-rls-multitenant`
+  (two-role RLS, `SET LOCAL` tenant context, two-tenant leak test, pgvector +
+  FTS pre-filter), `alembic-migrations` (DDL single-sourced from migrations,
+  roles/policies/extensions as migration objects, up/down CI gate),
+  `postgres-job-queue` (`jobs`/`job_steps` dispatch contract with `SKIP
+  LOCKED` claims, leases, idempotent enqueue, dead vs quarantined),
+  `fargate-worker` (generic Python runner image, always-on floor, EMF
+  autoscaling, least-privilege task roles, graceful shutdown), `descope-auth`
+  (IdP broker behind a seam, Lambda REQUEST authorizer, role→permission RBAC,
+  in-memory browser sessions), and `playwright-e2e` (codify a ticket's E2E
+  narrative into a spec with auth fixtures, polling-aware assertions, axe,
+  tenant/RBAC checks). Registered in the README skill list and
+  `config/snippets/skills.md`.
 - 2026-08-05: `web-ui-verify` skill — headless-browser visual verification for
   web UI changes: launch the dev server, drive Chromium via playwright-core
   (with browser-binary discovery), then prove claims with screenshots,
