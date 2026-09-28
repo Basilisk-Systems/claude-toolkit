@@ -8,6 +8,16 @@ This repository is not versioned; entries are grouped by date under Unreleased.
 ## [Unreleased]
 
 ### Added
+- 2026-09-28: `block-test-credentials.sh` global PreToolUse hook (matcher `*`),
+  plus `permissions.deny` Read/Edit rules on `~/.claude/TEST_CREDENTIALS.md*`
+  in `config/settings.json`. Keyword greps had leaked live passwords from that
+  file into context twice. The hook blocks any path/command naming the file,
+  plus content reads that would reach it anyway: Grep over the `~/.claude` root
+  or home, and Bash (checked per pipeline stage) readers given the root or a
+  root glob, recursive readers over `~`, `find -exec`, `find | xargs`, and
+  `cd ~/.claude` followed by a recursive read. Write/Edit content is not
+  checked, so docs can still mention the file. Non-secret values move to
+  `~/.claude/TEST_CONFIG.md`. 30-case pipe test in `hooks/tests/`.
 - 2026-09-23: `test-writing` skill — purposeful, non-redundant tests. A
   fact-ledger-then-survey workflow, the "which mutation kills this test?" gate
   before a test is written, a twelve-row frivolous-test catalogue (did-not-raise,

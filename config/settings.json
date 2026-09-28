@@ -30,7 +30,9 @@
     ],
     "deny": [
       "Bash(sudo rm:*)",
-      "Bash(mkfs:*)"
+      "Bash(mkfs:*)",
+      "Read(~/.claude/TEST_CREDENTIALS.md*)",
+      "Edit(~/.claude/TEST_CREDENTIALS.md*)"
     ],
     "defaultMode": "acceptEdits"
   },
@@ -68,6 +70,16 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/changelog-validator.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/block-test-credentials.sh",
             "timeout": 10
           }
         ]
