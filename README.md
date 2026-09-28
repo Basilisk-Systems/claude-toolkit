@@ -61,11 +61,14 @@ Knowledge files that auto-load when relevant:
 - `aws-cdk-patterns` — L3 constructs, modular patterns
 - `aws-bedrock` — Bedrock model invocation, Converse API
 - `aws-govcloud` — Partition-aware CDK, FIPS endpoints
+- `fargate-worker` — Generic Python runner on ECS Fargate: image asset, always-on floor, EMF autoscaling, least-privilege task roles, graceful shutdown
+- `descope-auth` — IdP broker behind a seam, Lambda REQUEST authorizer, role→permission RBAC, in-memory browser sessions
 
 **Frontend:**
 - `react-core` — React, TypeScript, Vite, TailwindCSS, shadcn/ui
 - `react-state` — Redux Toolkit, RTK Query
 - `web-ui-verify` — Headless-browser visual verification (screenshots, pixel sampling, geometry)
+- `playwright-e2e` — Codify a ticket's E2E/smoke narrative into a Playwright spec: auth fixtures, polling-aware assertions, axe, tenant/RBAC checks
 
 **Mobile (React Native + Expo):**
 - `react-native-expo` — Managed workflow, Expo Router, performance
@@ -75,12 +78,18 @@ Knowledge files that auto-load when relevant:
 - `healthkit-health-connect` — Platform health-store integration
 - `app-store-publishing` — Store review, EAS Build/Submit, IAP
 
+**Data (Postgres):**
+- `postgres-rls-multitenant` — Two-role row-level security, `SET LOCAL` tenant context, leak test, pgvector + FTS with pre-filter
+- `alembic-migrations` — DDL single-sourced from migrations; roles, RLS policies, extensions as migration objects; up/down CI gate
+- `postgres-job-queue` — `jobs`/`job_steps` dispatch contract: `SKIP LOCKED` claim, leases, idempotent enqueue, retries, dead vs quarantined
+
 **Other:**
 - `devops-cicd` — GitHub Actions, deployment pipelines
 - `security` — OWASP/NIST security best practices
 - `security-engineer` — Active codebase security auditing
 - `legal-drafting` — Contracts, NDAs, SOWs (Basilisk Systems)
 - `spec-writing` — Design-spec house style: structure, decision tables
+- `test-writing` — Purposeful, non-redundant tests: fact ledger, "which mutation kills this test?", frivolous-test catalogue, redundancy and mutation tooling
 - `writing` — Human-passing prose for blogs, copy, email
 
 ### GovCloud Skills (`--with-govcloud`)
