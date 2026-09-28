@@ -26,6 +26,11 @@ This repository is not versioned; entries are grouped by date under Unreleased.
   `.claude-local/SMOKE_TESTS.md`.
 
 ### Changed
+- 2026-09-28: `/blueprint` opens the written plan in VS Code (`code <plan>`)
+  before asking for approval, falling back to printing the path when `code`
+  is not on PATH, and re-opens it after each revision. The approval question
+  itself names the plan path, since text printed just before an
+  AskUserQuestion call can be hidden behind the dialog.
 - 2026-09-16: `session-handoff.sh` prints the "Where we left off" instruction
   *before* the injected HANDOFF.md instead of after it. Claude Code caps inline
   hook output at ~10 KB and persists anything larger to a tool-results file,

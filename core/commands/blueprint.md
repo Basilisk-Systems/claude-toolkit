@@ -123,6 +123,18 @@ Run `/estimate-context` via the Skill tool to project implementation cost.
 
 ## Step 7: Present for Approval
 
+### 7a. Open the plan for review
+
+The user must be able to read the full plan before approving. Open it in the IDE:
+
+```bash
+command -v code >/dev/null && code ~/.claude/plans/{name}.md
+```
+
+If `code` is not on PATH (terminal-only session), say so and tell the user the path to open. Never ask for approval before the plan has been opened or its path given.
+
+### 7b. Show the summary
+
 Show the user:
 
 ```
@@ -140,7 +152,7 @@ Tests: ~[N] new tests
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Then ask the user with AskUserQuestion:
+Then ask the user with AskUserQuestion. Text printed just before an AskUserQuestion call may be hidden behind the dialog, so the question itself must name the plan path and say it is open in the editor.
 
 - **"Approve — ready to implement"** — Description: "Run /clear-context then /implement to begin"
 - **"Run /handoff first"** — Description: "Save session handoff before clearing context"
@@ -157,7 +169,7 @@ Then ask the user with AskUserQuestion:
 
 - **Handoff:** Run `/handoff` via Skill tool, then show the same next steps.
 
-- **Revise:** Ask what needs to change, update the plan file, re-present.
+- **Revise:** Ask what needs to change, update the plan file, re-open it (Step 7a), re-present.
 
 ## Rules
 
