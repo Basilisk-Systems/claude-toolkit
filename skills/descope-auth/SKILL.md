@@ -400,7 +400,8 @@ const SupportJobs = import.meta.env.VITE_SUPPORT_BUILD === "true"
 Both behind `get_broker()`, selected by `AUTH_PROVIDER`:
 
 1. **Descope dev tenant** with seeded users per role, recorded in
-   `~/.claude/TEST_CREDENTIALS.md`, never in the repo.
+   `~/.claude/TEST_CREDENTIALS.md` (secrets; Claude is blocked from it) and
+   `~/.claude/TEST_CONFIG.md` (usernames, tenant IDs), never in the repo.
 2. **Stub broker** for compose runs: signs JWTs with a local RSA key and
    serves `/.well-known/jwks.json` from a tiny container. Same claims, same
    four roles; authorizer and RLS path run unchanged. The deploy role's

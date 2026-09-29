@@ -142,6 +142,7 @@ Agents run sequentially with the CPO brief gating all others. Hand off via `inpu
 **Global** shell hooks for formatting, safety, and session management (installed to `~/.claude/hooks/`):
 
 - `bash-safety.sh` — Prevent dangerous shell commands
+- `block-test-credentials.sh` — Keep Claude out of `~/.claude/TEST_CREDENTIALS.md` (the secrets file); non-secret values go in `~/.claude/TEST_CONFIG.md`. Pair with the `permissions.deny` Read/Edit rules in `config/settings.json`. Tests: `bash hooks/tests/test-block-test-credentials.sh`
 - `format-python.sh` / `format-typescript.sh` / `format-json.sh` — Auto-format on save
 - `changelog-validator.sh` — Validate CHANGELOG entries
 - `log-commands.sh` — Log executed commands

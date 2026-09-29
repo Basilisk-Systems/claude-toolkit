@@ -130,7 +130,9 @@ export { expect } from "@playwright/test";
 
 - One dedicated test user per role per tenant in the Descope dev tenant.
   Credentials come from env only (locally, export them from the entries kept
-  per `~/.claude/TEST_CREDENTIALS.md`). Never commit them.
+  per `~/.claude/TEST_CREDENTIALS.md`). Never commit them. Claude is blocked
+  from that file: it reads usernames and URLs from `~/.claude/TEST_CONFIG.md`
+  and has the user export the secrets.
 - Compose-only alternative: a stub broker minting JWTs plus a dev-only route
   that seeds the SDK session, behind a build flag that never ships.
 - Both hooks are gated by an `E2E` build flag and covered by the same CI bundle
