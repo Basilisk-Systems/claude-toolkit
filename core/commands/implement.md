@@ -248,16 +248,21 @@ Update `.claude-local/IMPLEMENT_STATE.md` with final status.
 
 Delete the plan file that was used for this implementation — its value is consumed, and the decisions are captured in git history, PR descriptions, and `/handoff`.
 
+Remove the plan together with its companion files and directories (anything named `{name}-*` or `{name}.md.tmp.*`, e.g. an `-audit/` directory the blueprint wrote next to it):
+
 ```bash
-rm ~/.claude/plans/{plan-file-name}.md
+rm -r ~/.claude/plans/{name}.md $(ls -d ~/.claude/plans/{name}-* ~/.claude/plans/{name}.md.tmp.* 2>/dev/null)
 ```
 
 Log it in the completion report:
 ```
-Plan file cleaned up: ~/.claude/plans/{name}.md
+Plan file cleaned up: ~/.claude/plans/{name}.md (+ siblings: [list or "none"])
 ```
 
-**Do NOT delete the plan if any phase failed or was skipped.** Only clean up on full successful completion.
+**Do NOT delete the plan if any phase failed or was skipped.** Only clean up on full successful completion. When you keep it, say so in the report so the plan isn't silently orphaned:
+```
+Plan retained: ~/.claude/plans/{name}.md — [phase N failed / skipped / manual]. /complete [TICKET-ID] will offer to sweep it.
+```
 
 ## Error Recovery
 

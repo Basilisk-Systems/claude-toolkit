@@ -59,6 +59,17 @@ This repository is not versioned; entries are grouped by date under Unreleased.
   `.claude-local/SMOKE_TESTS.md`.
 
 ### Changed
+- 2026-09-29: Plan-file cleanup no longer depends on a clean `/implement`
+  run. `/complete <ticket>` gained a sweep step: it finds plans in
+  `~/.claude/plans/` whose title line names the ticket ID as a whole token
+  (the directory is shared across projects, so never by age), lists each with
+  its companion files (`<name>-*`, `<name>.md.tmp.*`), and deletes them on
+  confirmation; plans whose title names other tickets default to Keep.
+  `/implement` Step 8 now removes those companion files with the plan and,
+  when a failed or skipped phase blocks cleanup, reports the plan as retained
+  instead of leaving it silently. Previously any run with a manual or
+  multi-session phase, and any plan executed without `/implement`, stayed in
+  `~/.claude/plans/` forever.
 - 2026-09-28: `/blueprint` opens the written plan in VS Code (`code <plan>`)
   before asking for approval, falling back to printing the path when `code`
   is not on PATH, and re-opens it after each revision. The approval question
