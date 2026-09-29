@@ -181,7 +181,29 @@ If found, add a line to the "## Completed" section:
 
 Group intelligently with existing entries if they're related to the same ticket/feature.
 
-### Step 9: Output Summary
+### Step 9: Sweep Consumed Plan Files (ticket IDs only)
+
+`/implement` deletes its plan only after every phase succeeds, so plans from runs with a failed, skipped, manual, or multi-session phase — and plans executed without `/implement` — are left behind. The ticket is complete now, so its plan is consumed. Skip this step when no ticket ID was given.
+
+`~/.claude/plans/` is shared by every project, so match on the ticket ID in the plan's title line (`/blueprint` writes `# <TICKET-ID>: <Title>`), never on age or recency:
+
+```bash
+ID="<TICKET-ID>"
+for f in ~/.claude/plans/*.md; do
+  [ -e "$f" ] || continue
+  head -1 "$f" | grep -qE "^# (.*[^A-Za-z0-9-])?${ID}([^A-Za-z0-9-]|$)" || continue
+  echo "PLAN $f | $(head -1 "$f")"
+  ls -d "${f%.md}"-* "$f".tmp.* 2>/dev/null | sed 's/^/  SIBLING /'
+done
+```
+
+The token match keeps `PROJ-1` from matching `PROJ-12`. Siblings are the plan's companion files and directories (`<name>-audit/`, `<name>.md.tmp.*`).
+
+- **No matches** → say so in the summary and move on.
+- **Matches** → list each plan with its title and siblings, then ask via AskUserQuestion: **"Delete (Recommended)"** / **"Keep"**. On delete, `rm -r` exactly the listed paths.
+- **Shared plans** — if a title names other ticket IDs too (e.g. `# PROJ-13 ∥ PROJ-6 ∥ PROJ-7: ...`), the plan still serves the other tickets. Note which ones and default to **Keep** unless the user confirms they are all complete.
+
+### Step 10: Output Summary
 
 ```markdown
 ## Task Completed ✓
@@ -208,6 +230,9 @@ Group intelligently with existing entries if they're related to the same ticket/
 
 ### STANDUP.md Updated
 - [Yes/No - depending on if .claude-local exists]
+
+### Plan Files
+- [Deleted: paths / Kept: paths (reason) / None found for TICKET-ID / N/A — no ticket ID]
 
 ### Files Changed
 - [List of files modified during this task]
