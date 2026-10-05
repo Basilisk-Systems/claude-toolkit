@@ -70,6 +70,9 @@ Knowledge files that auto-load when relevant:
 - `web-ui-verify` — Headless-browser visual verification (screenshots, pixel sampling, geometry)
 - `playwright-e2e` — Codify a ticket's E2E/smoke narrative into a Playwright spec: auth fixtures, polling-aware assertions, axe, tenant/RBAC checks
 
+**Games:**
+- `godot-headless` — Drive a code-first Godot 4.x project with no display: fetch the binary, headless vs Xvfb runs, screenshots from script, GDScript typing traps, local class reference
+
 **Mobile (React Native + Expo):**
 - `react-native-expo` — Managed workflow, Expo Router, performance
 - `mobile-ux-patterns` — Navigation, offline UX, accessibility

@@ -6,6 +6,7 @@
 **Postgres:** `postgres-rls-multitenant`, `alembic-migrations`, `postgres-job-queue`
 **Auth:** `descope-auth`
 **React:** `react-core`, `react-state`, `web-ui-verify`, `playwright-e2e`
+**Games:** `godot-headless`
 **Other:** `security`, `devops-cicd`, `spec-writing`, `test-writing`
 
 Skills load automatically. For AWS work, I follow Well-Architected principles (details in aws-cdk-core skill).
