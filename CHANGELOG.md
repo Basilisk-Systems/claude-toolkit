@@ -8,6 +8,16 @@ This repository is not versioned; entries are grouped by date under Unreleased.
 ## [Unreleased]
 
 ### Added
+- 2026-10-19: `/walkthrough [base-branch] [ticket-id|plan]` workflow command — an
+  explanation of a branch's diff for the developer, concept by concept (4–8 themes
+  ordered foundations → consumers), each tied to the acceptance criterion, plan
+  phase or recorded decision it implements, with departures from the plan read
+  from `IMPLEMENT_STATE.md`/`HANDOFF.md` and the tests that pin each theme.
+  Delivered in batches with a pause for questions, closing with "decisions to
+  confirm", "flagged for /code-review" and "not in this diff". Explicitly not a
+  review: no verdicts or fix suggestions, read-only, hands off to `/code-review`
+  and `/pre-merge`. Fills the gap between an `/implement` run and the developer's
+  own review of a diff they did not type.
 - 2026-09-28: `block-test-credentials.sh` global PreToolUse hook (matcher `*`),
   plus `permissions.deny` Read/Edit rules on `~/.claude/TEST_CREDENTIALS.md*`
   in `config/settings.json`. Keyword greps had leaked live passwords from that

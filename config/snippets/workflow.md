@@ -13,6 +13,7 @@ Available slash commands for development workflow:
 | `/handoff` | Generate session handoff for context continuity |
 | `/commit` | Stage changes, verify docs, prepare commit |
 | `/complete` | Complete a ticket with CHANGELOG/README updates |
+| `/walkthrough` | Explain the diff concept by concept, tied to the plan — orientation, not review |
 | `/code-review` | Multi-agent code review |
 | `/pre-merge` | Generate merge request title and description |
 | `/estimate-context` | Estimate context usage for a plan |
