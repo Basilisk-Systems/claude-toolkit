@@ -7,6 +7,18 @@ This repository is not versioned; entries are grouped by date under Unreleased.
 
 ## [Unreleased]
 
+### Changed
+- 2026-10-19: `/walkthrough` writes its explanation to one Markdown file,
+  `~/.claude/walkthroughs/<repo>--<branch>.md` (a re-run of the same branch replaces
+  it), and opens it the way `/blueprint` opens a plan; the terminal gets the concept
+  map to steer on, then a one-line pointer, never the document. The batch-and-pause
+  delivery is replaced by a follow-up prompt (question, go deeper, done) whose
+  answers append to the file. New `clean [all]` mode lists and deletes the
+  repository's (or every) walkthrough file after confirmation. `/complete` Step 9
+  sweeps `~/.claude/walkthroughs/` by ticket id beside `~/.claude/plans/`, so a
+  finished ticket's walkthrough is offered for deletion with its plan. The command
+  gains `Write`/`Edit` for its own file only; the repository stays read-only.
+
 ### Added
 - 2026-10-19: `/walkthrough [base-branch] [ticket-id|plan]` workflow command — an
   explanation of a branch's diff for the developer, concept by concept (4–8 themes
