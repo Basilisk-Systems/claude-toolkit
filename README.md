@@ -39,6 +39,7 @@ cd ~/claude-toolkit
 | `/handoff` | Generate session handoff for context continuity |
 | `/commit` | Stage changes, verify docs, prepare commit |
 | `/smoke-test` | Generate and run an interactive smoke test for a ticket |
+| `/walkthrough` | Explain a branch's diff to the developer, concept by concept, tied to the plan (an orientation, not a review) |
 | `/complete` | Complete a ticket with CHANGELOG/README updates |
 | `/pre-merge` | Generate merge request title and description |
 | `/estimate-context` | Estimate context usage for a plan |
