@@ -282,33 +282,28 @@ Source: https://developer.apple.com/design/human-interface-guidelines/notificati
 ---
 
 ## Iduna mapping
-Files: `apps/mobile/src/theme/tokens.ts`, `src/theme/navigation.ts`, `src/components/ui/Button.tsx`, `src/components/BackButton.tsx`. `Button` (minHeight 44 + hitSlop 8) meets 44 pt and, effectively, 48 dp.
+Files: `apps/mobile/src/theme/tokens.ts`, `src/theme/useTheme.ts`, `src/theme/makeStyles.ts`, `src/theme/navigation.ts`, `src/components/ui/Button.tsx`, `src/components/BackButton.tsx`. `Button` (minHeight 44 + hitSlop 8) meets 44 pt and, effectively, 48 dp.
 | Token / component | Guideline role |
 |---|---|
-| `colors.ink` / `inkMuted` / `inkSubtle` | label / secondaryLabel / tertiaryLabel (iOS); onSurface / onSurfaceVariant (Material) |
-| `colors.accent` (+ `accentSoft`, `accentTint`) | app tint: links, text buttons, active tab, selection (Material primary) |
-| `colors.danger` | destructive role / system red / Material error |
-| `colors.surface` / `surfaceAlt`, `border` | systemBackground / secondarySystemBackground, separator |
+| `colors.ink` / `inkMuted` / `inkSubtle` (dark `#ececec` / `#c2c2c2` / `#9a9a9a`) | label / secondaryLabel / tertiaryLabel (iOS); onSurface / onSurfaceVariant (Material) |
+| `colors.accent` (+ `accentSoft`, `accentTint`; light `#2563eb`, dark `#60a5fa` = `accentNight` in `app.config.ts`, which also tints Android's `values-night` picker/alert resources) | app tint: links, text buttons, active tab, selection (Material primary) |
+| `colors.danger` (dark `#f87171`; also the chart/heat "outside" red in both palettes) | destructive role / system red / Material error |
+| `colors.surface` / `surfaceAlt`, `border` (dark `#121212` / `#1e1e1e`, `#2e2e2e`) | systemBackground / secondarySystemBackground, separator |
+| `useTheme()` → `{ scheme, colors }`; `makeStyles((colors) => ({…}))` → `useStyles()` | "provide both light and dark colors": every screen builds its styles from the active palette; components never import `lightColors`/`darkColors` (static guard) and every text style carries a `color` (text-colour guard) |
 | `type.title` 24 · `display` 28 | Title 1 (28) range; Material headlineSmall (24) / headlineMedium (28) |
-| `type.heading` 17/600 | iOS Headline (17 semibold), also the nav-bar title via `headerOptions` |
-| `type.body` 15 / lh 21 | iOS Subhead size (15), not Body (17); Material bodyLarge is 16 |
+| `type.heading` 17/600 | iOS Headline (17 semibold), also the nav-bar title via `useHeaderOptions()` |
+| `type.body` 16 / lh 22 | Material bodyLarge (16); one point under iOS Body (17), chosen to keep dense rows and the share image on one line (IDNA-102 D1) |
 | `type.caption` 13 · `label` 12 | Footnote 13 · Caption 1 12 (both above the 11 pt floor) |
 | `space` 4/8/12/16/24/32 | matches the Android 4/8 dp grid; HIG gives no grid |
 | `Button` primary (ink fill) | the one prominent action per screen (HIG prominent uses the accent colour; ink is a brand choice) |
 | `Button` secondary (ink outline) | Material outlined / HIG less-prominent alternative |
 | `Button` destructive (danger fill) | destructive role; never the default or primary action in a pair |
-| `Button` text (accent) | Material text / route switches like "Don't have an account? Sign up" |
-| `BackButton` (chevron + "Back") | custom back for headerless onboarding/auth steps |
-| `headerOptions` / `tabBarOptions` | top bar title style + tint; tab active `accent`, inactive `inkSubtle` |
+| `Button` text (accent); `leadIn` two-tone; `selected` = 2 pt accent outline on `accentSoft` | Material text / route switches like "Don't have an account? **Sign up**"; selection shown by more than colour |
+| `BackButton` (platform glyph only: Material arrow / iOS chevron, a11y label "Back") | custom back for headerless onboarding/auth steps |
+| `useHeaderOptions()` / `useTabBarOptions()` + `navigationTheme()` | top bar title style + tint; tab active `accent`, inactive `inkSubtle`; expo-router's `ThemeProvider` keyed to the system scheme so native chrome and modals flip with it |
 ### Open deviations
-- `type.body` is 15 pt, below the iOS Body default of 17 pt (Material bodyLarge 16 sp). It is above the 11 pt minimum, so it is legal but reads as Subhead.
-- `colors.inkSubtle` (#777) is 4.48:1 on `surface` and 4.07:1 on `surfaceAlt`, under the 4.5:1 minimum for text up to 17 pt. It is used for caption text (dashboard, baseline, permissions) and as `tabBarInactiveTintColor`.
-- `CalendarHeatmap` day headers and caption are 11 pt (the iOS minimum) in `CHART_MUTED` #999, which is 2.85:1 on white and fails 4.5:1.
-- `colors.success` (#009E73) is 3.42:1 on white. That is fine for fills and large text but fails 4.5:1 for small text.
-- Light mode is pinned (`userInterfaceStyle: "light"`, IDNA-094 D7). The HIG says people "expect all apps ... to respect their preference" and asks for light and dark variants even in a single-appearance app.
-- `BackButton` shows the text label "Back". Toolbars says "don't use a text label that says Back or Close"; a custom back should look like the standard chevron.
-- The dashboard header title is "Iduna" (placeholder). Toolbars: "Don't title windows with your app name."
-- Tab icons switch to `-outline` variants when unfocused; Tab bars: "Prefer filled symbols or icons."
-- `Button` `selected` only sets `accessibilityState`, with no built-in visual, so callers style it ad hoc. On `screening.tsx` the peer Yes/No answers use different variants (secondary vs primary), which reads as a preferred answer. HIG: "Use style — not size — to visually distinguish the preferred choice"; equal choices should match.
-- `permissions.tsx` (pre-permission screen) has a `BackButton` beside Continue. Privacy: a pre-alert screen gets "only one button" and no way to leave without the system alert. This becomes binding when the real HealthKit/Health Connect prompt lands (M5).
-- Log-tab delete confirmations (`confirmDelete`) alert on every delete and style the deliberately chosen "Delete" as destructive. Alerts: avoid alerts "for common, undoable actions", and the destructive style is for actions "people didn't deliberately choose". If deletes are soft/undoable, the HIG prefers no alert, or an Undo.
+Resolved by IDNA-094 (2026-10-16), IDNA-102 (2026-10-19) and IDNA-103 (2026-10-20): body size (now 16), `inkSubtle` contrast (#6b6b6b, 5.3:1), heat-map header/caption contrast and glyph weight, `success` documented as fill / ≥18 pt only, chevron-only back control, no app-name title, tab icons (iOS filled in both states; Android keeps Material's outlined-inactive), `Button` built-in `selected` visual, native picker tint via a config plugin, two-tone cross links, and dark mode following the system appearance (`userInterfaceStyle: "automatic"`, no in-app toggle; every dark text token ≥ 4.5:1 on every surface it sits on, chart/heat tiers per palette). Known light-palette floors below 4.5:1 (danger/warning on `surfaceAlt`, danger on `accentSoft`, surface glyph on `heat.mild`) are pinned as `LIGHT_FLOORS` in `tokens.test.ts`, unticketed.
+
+- **Accepted deviation — two-button pre-permission screens.** `permissions.tsx`, `pre-permission.tsx` and `health-connect.tsx` keep a "Not now" escape beside the primary action. Privacy says a pre-alert screen gets "only one button" and no way to leave without the system alert. Iduna's IDNA-051/052/053 product decision is that a user must be able to decline without seeing the system prompt (no-pressure stance for an ED-sensitive audience). Recorded 2026-10-19 (IDNA-102 D16); revisit only if App Review objects.
+- Log-tab delete confirmations alert on every delete with a destructive "Delete". Alerts: avoid alerts "for common, undoable actions". Deletes are soft, so the fix is delete + inline Undo — filed as **IDNA-104**.
+- Drift breakdown radar's only legend is a one-line caption; the grey no-data spokes and red outside-range labels are unexplained for sighted users — filed as **IDNA-105**.
