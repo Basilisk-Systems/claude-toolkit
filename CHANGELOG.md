@@ -30,6 +30,20 @@ This repository is not versioned; entries are grouped by date under Unreleased.
   review: no verdicts or fix suggestions, read-only, hands off to `/code-review`
   and `/pre-merge`. Fills the gap between an `/implement` run and the developer's
   own review of a diff they did not type.
+- 2026-10-16: `mobile-design-guidelines` skill — the platform rulebook distilled
+  from Apple's Human Interface Guidelines (39 pages, iOS 26 / Liquid Glass era)
+  and Material 3 / Android guidance where Android differs, written for React
+  Native + Expo. 13 sections (layout, typography, colour and dark mode, button
+  prominence, navigation chrome and back behaviour incl. predictive back, forms
+  and pickers, modality, feedback, onboarding/accounts/permissions, lists and
+  charts, accessibility, notifications), each rule cited to its source page,
+  plus twelve `references/*.md` topic files and a project-mapping section with
+  an "open deviations" audit pattern. Complements `mobile-ux-patterns` (flow
+  patterns) rather than replacing it. Research note: both guideline sites are
+  client-rendered; Apple's page text is reachable at
+  `developer.apple.com/tutorials/data/design/human-interface-guidelines/<slug>.json`
+  and Material's at the `material-components-android` docs and
+  developer.android.com.
 - 2026-09-28: `block-test-credentials.sh` global PreToolUse hook (matcher `*`),
   plus `permissions.deny` Read/Edit rules on `~/.claude/TEST_CREDENTIALS.md*`
   in `config/settings.json`. Keyword greps had leaked live passwords from that

@@ -77,6 +77,7 @@ Knowledge files that auto-load when relevant:
 **Mobile (React Native + Expo):**
 - `react-native-expo` — Managed workflow, Expo Router, performance
 - `mobile-ux-patterns` — Navigation, offline UX, accessibility
+- `mobile-design-guidelines` — Apple HIG + Material 3 rulebook, every rule cited: layout/touch targets, Dynamic Type, colour/contrast/dark mode, button prominence, navigation chrome and back behaviour, forms, modality, feedback, onboarding/accounts/permissions, charts, accessibility, notifications; references/ per topic
 - `mobile-security` — Secure storage, tokens, health-data privacy
 - `mobile-push-notifications` — APNs/FCM, Expo Push API
 - `healthkit-health-connect` — Platform health-store integration
