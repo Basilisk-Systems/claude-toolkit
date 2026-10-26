@@ -8,6 +8,10 @@ This repository is not versioned; entries are grouped by date under Unreleased.
 ## [Unreleased]
 
 ### Changed
+- 2026-10-26: `mobile-design-guidelines` › Iduna "Open deviations": the IDNA-104
+  (Log-tab delete alerts → immediate soft delete + inline Undo) and IDNA-105 (radar
+  legend row) bullets move to the "Resolved by …" line now that both are merged; the
+  only remaining entry is the accepted two-button pre-permission deviation.
 - 2026-10-19: `/walkthrough` writes its explanation to one Markdown file,
   `~/.claude/walkthroughs/<repo>--<branch>.md` (a re-run of the same branch replaces
   it), and opens it the way `/blueprint` opens a plan; the terminal gets the concept
