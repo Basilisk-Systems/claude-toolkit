@@ -204,7 +204,14 @@ The token match keeps `PROJ-1` from matching `PROJ-12`. Siblings are the plan's 
 - **Matches** → list each plan and walkthrough with its title and siblings, then ask via AskUserQuestion: **"Delete (Recommended)"** / **"Keep"**. On delete, `rm -r` exactly the listed paths. A walkthrough has no siblings and is deleted outright.
 - **Shared plans** — if a title names other ticket IDs too (e.g. `# PROJ-13 ∥ PROJ-6 ∥ PROJ-7: ...`), the plan still serves the other tickets. Note which ones and default to **Keep** unless the user confirms they are all complete.
 
-### Step 10: Output Summary
+### Step 10: Archive the Ticket (if the project archives)
+
+If `docs/ARCHIVED_TICKETS.md` exists, the project keeps finished specs out of the active
+backlog. Do not move the ticket here; tell the user the next step is `/archive <ticket-id>`
+(run before `/commit`, so the move lands in the same commit as the CHANGELOG update).
+If the file does not exist, skip silently.
+
+### Step 11: Output Summary
 
 ```markdown
 ## Task Completed ✓
@@ -239,6 +246,7 @@ The token match keeps `PROJ-1` from matching `PROJ-12`. Siblings are the plan's 
 - [List of files modified during this task]
 
 ### Next Steps
+- `/archive <ticket-id>` (when docs/ARCHIVED_TICKETS.md exists), then `/commit`
 - [Any follow-up tasks or considerations]
 ```
 

@@ -8,6 +8,10 @@ This repository is not versioned; entries are grouped by date under Unreleased.
 ## [Unreleased]
 
 ### Changed
+- 2026-10-27: `/complete` regains the `/archive` hand-off that the per-user copy
+  carried: a new Step 10 points at `/archive <ticket-id>` (before `/commit`) when
+  `docs/ARCHIVED_TICKETS.md` exists, and the summary's Next Steps list it. The
+  plan-and-walkthrough sweep (Step 9) is unchanged; the summary moves to Step 11.
 - 2026-10-27: `/implement` phase agents must commit before backgrounding any
   long verification: a test or coverage run that outruns the Bash foreground
   timeout is run foreground with an extended timeout, or the staged work is
