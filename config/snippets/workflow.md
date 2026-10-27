@@ -13,6 +13,7 @@ Available slash commands for development workflow:
 | `/handoff` | Generate session handoff for context continuity |
 | `/commit` | Stage changes, verify docs, prepare commit |
 | `/complete` | Complete a ticket with CHANGELOG/README updates |
+| `/archive` | Archive a completed ticket from TICKETS.md to ARCHIVED_TICKETS.md (keeps the full spec, closes the linked issue) |
 | `/walkthrough [clean]` | Write and open a walkthrough file of the diff, concept by concept, tied to the plan — orientation, not review; `clean` removes it |
 | `/code-review` | Multi-agent code review |
 | `/pre-merge` | Generate merge request title and description |

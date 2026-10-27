@@ -41,6 +41,17 @@ This repository is not versioned; entries are grouped by date under Unreleased.
   gains `Write`/`Edit` for its own file only; the repository stays read-only.
 
 ### Added
+- 2026-10-27: `/archive <ticket-id>` workflow command — the last wrap-up step
+  after `/complete`: moves the ticket's full section from `TICKETS.md` to
+  `ARCHIVED_TICKETS.md` (creating the archive with a project-named header when
+  missing, flattening the heading to `##`, copying the body verbatim), then tidies
+  what remains — the "Completed Tickets (Reference)" one-liner, the archived-as-of
+  status note, and dependency/order mentions. Headings may sit at `##`–`####` depth
+  and carry a GitHub link; the issue number is also read from a `**GitHub:** #N`
+  status line. The linked issue is left alone when closed or when an open PR from
+  the current branch references it, and closed only after asking otherwise. Edits
+  files only; never commits. Promoted from the per-user copy that `/complete`
+  workflows have relied on since August.
 - 2026-10-19: `/walkthrough [base-branch] [ticket-id|plan]` workflow command — an
   explanation of a branch's diff for the developer, concept by concept (4–8 themes
   ordered foundations → consumers), each tied to the acceptance criterion, plan
