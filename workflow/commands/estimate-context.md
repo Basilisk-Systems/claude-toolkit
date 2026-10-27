@@ -24,6 +24,10 @@ Consider these when estimating context consumption:
 | Implementation phases | 1-2 | 3-5 | 6+ |
 | Cross-cutting concerns | None | 1-2 (auth, state) | 3+ (auth, state, routing, API) |
 
+## Context Window
+
+All percentages are relative to the configured window: read the `Context Window:` line from the SessionStart output (default 1M tokens; override with `CLAUDE_CONTEXT_WINDOW_TOKENS` in `~/.claude/settings.json`). At 1M, 1% ≈ 10k tokens. Per-action token costs are in `~/.claude/CONTEXT_WEIGHTS.md`.
+
 ## Estimation Formula
 
 ```
@@ -53,7 +57,7 @@ Overhead:
 
 ### Estimates
 
-| Scenario | Est. Tokens | % of 200k | Assessment |
+| Scenario | Est. Tokens | % of window | Assessment |
 |----------|-------------|-----------|------------|
 | **Low** (minimal iteration) | [X]k | [X]% | [Can complete in one session?] |
 | **Medium** (normal iteration) | [X]k | [X]% | [Recommendation] |

@@ -161,7 +161,7 @@ Agents run sequentially with the CPO brief gating all others. Hand off via `inpu
 
 - `CLAUDE.md` — Global instructions template (copied, not symlinked — personalize it)
 - `settings.json` — Claude Code settings template (copied)
-- `CONTEXT_WEIGHTS.md` — Context estimation heuristics (symlinked)
+- `CONTEXT_WEIGHTS.md` — Context estimation heuristics (symlinked); percentages scale off `CLAUDE_CONTEXT_WINDOW_TOKENS` in `settings.json` (default `1000000`; set `200000` for Haiku 4.5), which `session-start.sh` prints into every session
 
 When combined with `--with-workflow` or `--with-skills`, the installer appends relevant configuration snippets (from `config/snippets/`) to your `CLAUDE.md` so commands and skills are referenced in your global instructions.
 

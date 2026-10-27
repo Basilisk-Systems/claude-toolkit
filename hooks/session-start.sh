@@ -8,7 +8,8 @@
 # WHY THIS EXISTS:
 #   - LLMs can have outdated knowledge of "today's date"
 #   - This hook provides the ACTUAL current date from the system
-#   - Also provides other useful session context
+#   - Also provides other useful session context, including the configured
+#     context window size so the 📊 Context status line is scaled correctly
 #
 # OUTPUT:
 #   - Plain text on stdout (exit 0). For SessionStart hooks, raw stdout is
@@ -23,6 +24,26 @@ DAY_OF_WEEK=$(date +%A)
 
 # Get timezone
 TIMEZONE=$(date +%Z)
+
+# Context window size (tokens). Configurable via CLAUDE_CONTEXT_WINDOW_TOKENS in
+# ~/.claude/settings.json "env". Defaults to 1,000,000 (Claude 5 family: Fable,
+# Opus, Sonnet). Set 200000 for Haiku 4.5. Non-numeric or absurdly small values
+# fall back to the default so a typo never breaks the session.
+CONTEXT_WINDOW_DEFAULT=1000000
+CONTEXT_WINDOW_HINT="set CLAUDE_CONTEXT_WINDOW_TOKENS in ~/.claude/settings.json to change"
+CONTEXT_WINDOW="${CLAUDE_CONTEXT_WINDOW_TOKENS:-}"
+if [[ "$CONTEXT_WINDOW" =~ ^[0-9]+$ ]] && [ "$CONTEXT_WINDOW" -ge 1000 ]; then
+    CONTEXT_WINDOW_SOURCE="from CLAUDE_CONTEXT_WINDOW_TOKENS"
+elif [ -n "$CONTEXT_WINDOW" ]; then
+    CONTEXT_WINDOW="$CONTEXT_WINDOW_DEFAULT"
+    CONTEXT_WINDOW_SOURCE="default — CLAUDE_CONTEXT_WINDOW_TOKENS was not a valid token count; ${CONTEXT_WINDOW_HINT}"
+else
+    CONTEXT_WINDOW="$CONTEXT_WINDOW_DEFAULT"
+    CONTEXT_WINDOW_SOURCE="default; ${CONTEXT_WINDOW_HINT}"
+fi
+# Human-friendly formatting: 1000000 -> "1,000,000", plus tokens-per-1% for quick math
+CONTEXT_WINDOW_FMT=$(printf '%s' "$CONTEXT_WINDOW" | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta')
+CONTEXT_PCT_FMT=$(printf '%s' "$(( CONTEXT_WINDOW / 100 ))" | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta')
 
 # Check if in a git repo
 GIT_BRANCH=""
@@ -73,7 +94,8 @@ fi
 CONTEXT="SYSTEM CONTEXT (from SessionStart hook):
 - Current Date: ${CURRENT_DATE} (${DAY_OF_WEEK})
 - Current Time: ${CURRENT_TIME} ${TIMEZONE}
-- ISO DateTime: ${CURRENT_DATETIME}"
+- ISO DateTime: ${CURRENT_DATETIME}
+- Context Window: ${CONTEXT_WINDOW_FMT} tokens (1% ≈ ${CONTEXT_PCT_FMT} tokens; ${CONTEXT_WINDOW_SOURCE})"
 
 if [ -n "$PROJECT_NAME" ]; then
     CONTEXT="${CONTEXT}

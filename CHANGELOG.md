@@ -8,6 +8,15 @@ This repository is not versioned; entries are grouped by date under Unreleased.
 ## [Unreleased]
 
 ### Changed
+- 2026-10-27: context estimation rescaled from a hardcoded 200k window to a
+  configurable one. `CLAUDE_CONTEXT_WINDOW_TOKENS` in `settings.json` `env`
+  (default `1000000`, the Claude 5 family window; `200000` for Haiku 4.5) is
+  read by `session-start.sh`, which prints a `Context Window:` line with the
+  tokens-per-1% figure into every session. `CONTEXT_WEIGHTS.md` now lists
+  per-action costs in tokens with percentages at the 1M default (HANDOFF.md
+  ~0.7%, large file read ~1%, ~2% baseline), and `/context-status`,
+  `/estimate-context` and the CLAUDE.md context-reporting rule reference the
+  configured window instead of `200k`.
 - 2026-10-26: `mobile-design-guidelines` › Iduna "Open deviations": the IDNA-104
   (Log-tab delete alerts → immediate soft delete + inline Undo) and IDNA-105 (radar
   legend row) bullets move to the "Resolved by …" line now that both are merged; the
