@@ -8,6 +8,14 @@ This repository is not versioned; entries are grouped by date under Unreleased.
 ## [Unreleased]
 
 ### Changed
+- 2026-10-27: `/implement` phase agents must commit before backgrounding any
+  long verification: a test or coverage run that outruns the Bash foreground
+  timeout is run foreground with an extended timeout, or the staged work is
+  committed first and the suite run afterwards — never a phase handed back with
+  an uncommitted tree. The orchestrator's "agent failed to commit" branch gains a
+  first check: when the work is complete and merely uncommitted, verify it
+  directly (diff, outstanding tests to green) and commit as the orchestrator
+  instead of spawning another agent, noting why in the state file.
 - 2026-10-27: context estimation rescaled from a hardcoded 200k window to a
   configurable one. `CLAUDE_CONTEXT_WINDOW_TOKENS` in `settings.json` `env`
   (default `1000000`, the Claude 5 family window; `200000` for Haiku 4.5) is

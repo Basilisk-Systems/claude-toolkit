@@ -141,6 +141,7 @@ Read the repo's CLAUDE.md and README for project context, identity, and conventi
 3. After implementation, run tests using the target repo's own test commands — discover them from CLAUDE.md, package.json scripts, Makefile, tox/pytest config, or CI config. Scope to the tests relevant to this phase.
 4. Run lint/format checks using the target repo's own lint commands (same sources: CLAUDE.md, package.json scripts, Makefile, pre-commit config)
 5. If tests or lint fail, fix the issues before committing
+   - **Commit BEFORE you background any long-running verification.** If a test/coverage run exceeds the Bash foreground timeout, do NOT background it and end your turn — you will hand the phase back with an uncommitted tree. Either (a) run it foreground with an extended timeout (e.g. `timeout: 600000`), or (b) commit your staged work first, then run the long suite, then follow up only if it surfaces a failure. Never finish a phase with the commit still pending on a backgrounded job.
 6. Stage ONLY the files you created or modified:
    git add [specific file paths]
 7. Commit using HEREDOC format:
@@ -184,6 +185,7 @@ git diff HEAD~1 --stat
 
 3. **If agent failed to commit (escalate to Opus):**
    - Run `git status` and `git diff --stat` to assess partial work
+   - **If the work is actually complete but just uncommitted** (agent backgrounded a long verification and ended its turn, or otherwise stopped one step short): do NOT spawn a new agent. Verify the work yourself — review the diff, run the outstanding tests to green (extended-timeout foreground), then stage the specific files and commit directly as the orchestrator. Note in the state file that the orchestrator finished the commit and why.
    - If work is partially done with passing tests: stage and commit the partial work, note the gap
    - If tests failed: report to user, offer to spawn a fix-up agent (`model: "opus"`) — include the Sonnet agent's error output and failing test names in the prompt so Opus has full context
    - If the agent reported incomplete work (its final report says the phase wasn't finished): report progress, spawn a continuation agent (`model: "opus"`) for remaining work in this phase — include a summary of what was completed and what remains
