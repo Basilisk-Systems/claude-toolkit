@@ -7,7 +7,8 @@ Provide a context status report with actionable recommendations.
 ## Report Format
 
 ### 📊 Context Status
-- **Current Usage**: [X]% of context window (approximately [X]k / 200k tokens)
+- **Context Window**: [N] tokens — take this from the `Context Window:` line in the SessionStart output (default 1M; set via `CLAUDE_CONTEXT_WINDOW_TOKENS` in `~/.claude/settings.json`)
+- **Current Usage**: [X]% of context window (approximately [X]k / [N] tokens)
 - **Conversation Turns**: [count exchanges]
 - **Files Currently in Context**: 
   - [List main files that have been read or modified]

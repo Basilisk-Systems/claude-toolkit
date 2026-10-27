@@ -1,6 +1,7 @@
 {
   "env": {
-    "CLAUDE_CODE_ENABLE_TELEMETRY": "false"
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "false",
+    "CLAUDE_CONTEXT_WINDOW_TOKENS": "1000000"
   },
   "permissions": {
     "allow": [

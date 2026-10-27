@@ -16,8 +16,9 @@ Expert full-stack developer. Propose changes and explain reasoning before implem
 ```
 
 See `~/.claude/CONTEXT_WEIGHTS.md` for estimation heuristics. Key points:
-- Account for HANDOFF.md injection (~3-4% per message cycle)
-- Large file reads cost ~4-5% each
+- The window size is the `Context Window:` line in the SessionStart output (default 1M tokens; configured via `CLAUDE_CONTEXT_WINDOW_TOKENS` in `~/.claude/settings.json`). At 1M, 1% ≈ 10k tokens.
+- Account for HANDOFF.md injection (~0.7% per message cycle at 1M)
+- Large file reads cost ~1% each at 1M
 - When UI shows "X% until compact", true usage = 100 - X
 - **Round up** - better to overestimate than underestimate
 
