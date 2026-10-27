@@ -41,6 +41,7 @@ cd ~/claude-toolkit
 | `/smoke-test` | Generate and run an interactive smoke test for a ticket |
 | `/walkthrough` | Write and open a readable walkthrough of a branch's diff, concept by concept, tied to the plan (an orientation, not a review); `clean` removes it |
 | `/complete` | Complete a ticket with CHANGELOG/README updates |
+| `/archive` | Archive a completed ticket from TICKETS.md to ARCHIVED_TICKETS.md (keeps the full spec, closes the linked issue) |
 | `/pre-merge` | Generate merge request title and description |
 | `/estimate-context` | Estimate context usage for a plan |
 | `/context-status` | Check current context window usage |
