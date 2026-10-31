@@ -10,6 +10,7 @@ Available slash commands for development workflow:
 | `/blueprint` | Research codebase and write an implementation plan |
 | `/implement` | Orchestrate sub-agents to execute plan phases |
 | `/branch` | Create a semantic branch from a ticket description |
+| `/sync` | Fetch/prune, fast-forward `main`/`dev`, delete merged or gone local branches (`--rebase`, `--dry-run`); `/branch` runs it first |
 | `/handoff` | Generate session handoff for context continuity |
 | `/commit` | Stage changes, verify docs, prepare commit |
 | `/complete` | Complete a ticket with CHANGELOG/README updates |

@@ -8,6 +8,23 @@ Create a semantic git branch from: $ARGUMENTS
 
 **Project conventions:** If the project's `CLAUDE.md` has a `## Git Conventions` section (ticket ID format, branch naming), follow it — it overrides the generic defaults below.
 
+## Step 0: Sync and Pick the Base
+
+Run the `/sync` procedure (`~/.claude/commands/sync.md`, no flags) first. It fetches with prune,
+fast-forwards local `main`/`dev` to origin, and deletes local branches that are merged or whose
+remote is gone. If the working tree is dirty, `/sync` stops; stop here too and tell the user.
+
+Then choose the base and check it out:
+
+- The integration branch named in the project `CLAUDE.md` if there is one; else `dev` if it
+  exists on origin; else `main`.
+- If the user is currently on another feature branch and asked for a stacked branch, or the
+  ticket's text says it builds on an open branch, stay there instead and say so in the report.
+
+```bash
+git checkout <base>
+```
+
 ## Step 1: Resolve the Branch Name
 
 ### 1a. Determine Input Type
@@ -76,6 +93,8 @@ If the branch already exists locally or on the remote, tell the user and ask if 
 
 ## Step 3: Create and Checkout
 
+From the base checked out in Step 0:
+
 ```bash
 git checkout -b <branch-name>
 ```
@@ -87,7 +106,8 @@ Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🌿 Branch created: <branch-name>
-   From: <current-branch> @ <short-sha>
+   From: <base> @ <short-sha> (synced with origin)
+   Pruned: <N> stale local branches | none
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

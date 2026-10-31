@@ -8,6 +8,10 @@ This repository is not versioned; entries are grouped by date under Unreleased.
 ## [Unreleased]
 
 ### Changed
+- 2026-10-31: `/branch` gains Step 0: run `/sync`, then check out the base
+  (`CLAUDE.md` integration branch, else `dev` if on origin, else `main`) before creating
+  the branch, so every ticket starts from a fresh base and stale local branches are
+  pruned on the way. Stacked branches stay on the current branch when asked for.
 - 2026-10-27: `/complete` regains the `/archive` hand-off that the per-user copy
   carried: a new Step 10 points at `/archive <ticket-id>` (before `/commit`) when
   `docs/ARCHIVED_TICKETS.md` exists, and the summary's Next Steps list it. The
@@ -45,6 +49,13 @@ This repository is not versioned; entries are grouped by date under Unreleased.
   gains `Write`/`Edit` for its own file only; the repository stays read-only.
 
 ### Added
+- 2026-10-31: `/sync [--rebase] [--dry-run]`: post-merge housekeeping. Fetches with
+  prune, fast-forwards local `main`/`master`/`dev`/`develop` to origin (never touches a
+  diverged base), deletes local branches that are merged, whose remote is gone, or whose
+  PR merged (squash-merge safe: a branch is only force-deleted when it has no commits
+  absent from every base or its tree matches a base), keeps the current branch, and
+  with `--rebase` rebases the current feature branch onto its base, aborting on
+  conflict. Refuses to run on a dirty tree and never pushes.
 - 2026-10-27: `/archive <ticket-id>` workflow command — the last wrap-up step
   after `/complete`: moves the ticket's full section from `TICKETS.md` to
   `ARCHIVED_TICKETS.md` (creating the archive with a project-named header when
