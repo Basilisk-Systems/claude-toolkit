@@ -43,6 +43,7 @@ cd ~/claude-toolkit
 | `/complete` | Complete a ticket with CHANGELOG/README updates |
 | `/archive` | Archive a completed ticket from TICKETS.md to ARCHIVED_TICKETS.md (keeps the full spec, closes the linked issue) |
 | `/pre-merge` | Generate merge request title and description |
+| `/sync` | Fetch/prune, fast-forward `main`/`dev` to origin, delete merged or gone local branches (`--rebase`, `--dry-run`); `/branch` runs it first |
 | `/estimate-context` | Estimate context usage for a plan |
 | `/context-status` | Check current context window usage |
 | `/clear-context [skip]` | Clear context and reload HANDOFF.md with an opening brief (`skip` = silent fresh context, e.g. before `/implement`) |
